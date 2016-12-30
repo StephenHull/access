@@ -7,8 +7,8 @@ Public Sub FoodAndNutrientData()
     
     Set FAND = New clsFAND
     With FAND
-        Call .RebuildTables
-        Call .OpenCommands
+'        Call .RebuildTables
+'        Call .OpenCommands
 '        Call .ImportData
 '        Call .ExportData(fvnFNDDS1)
 '        Call .ExportData(fvnFNDDS2)

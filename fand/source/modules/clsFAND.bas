@@ -114,7 +114,7 @@ Private Sub Class_Initialize()
     With cnnFNDDS
         .ConnectionString = "Provider=SQLOLEDB;" & _
             "Data Source=SGH-03;" & _
-            "Initial Catalog=fndds;" & _
+            "Initial Catalog=FnddsDatabase;" & _
             "Integrated Security=SSPI"
         .CursorLocation = adUseServer
         .Open
@@ -396,12 +396,7 @@ Private Sub AppendFoodDescr()
         "fooddescr.Version," & _
         "fooddescr.MainDescription," & _
         "fooddescr.AbbrDescription," & _
-        "fooddescr.IncludesCount," & _
-        "fooddescr.IncludesText1," & _
-        "fooddescr.IncludesText2," & _
-        "fooddescr.IncludesText3," & _
-        "fooddescr.IncludesText4," & _
-        "fooddescr.IncludesText5," & _
+        "fooddescr.IncludesDescription," & _
         "fooddescr.FortificationCode," & _
         "fooddescr.MoistureChange," & _
         "fooddescr.FatChange," & _
@@ -416,19 +411,19 @@ Private Sub AppendFoodDescr()
     Call rst1.Open(SQL, cnnBack, adOpenKeyset, adLockOptimistic, adCmdText)
 
     '--Old table
-    SQL = "SELECT tblMainFoodDesc.FoodCode," & _
-        "tblMainFoodDesc.Version," & _
-        "tblMainFoodDesc.MainFoodDescription," & _
-        "tblMainFoodDesc.AbbreviatedMainFoodDescription," & _
-        "tblMainFoodDesc.FortificationIdentifier," & _
-        "tblMoistNFatAdjust.MoistureChange," & _
-        "tblMoistNFatAdjust.FatChange," & _
-        "tblMoistNFatAdjust.TypeOfFat " & _
-        "FROM tblMainFoodDesc INNER JOIN tblMoistNFatAdjust ON " & _
-        "tblMainFoodDesc.FoodCode = tblMoistNFatAdjust.FoodCode AND " & _
-        "tblMainFoodDesc.Version = tblMoistNFatAdjust.Version " & _
-        "ORDER BY tblMainFoodDesc.FoodCode," & _
-        "tblMainFoodDesc.Version"
+    SQL = "SELECT MainFoodDesc.FoodCode," & _
+        "MainFoodDesc.Version," & _
+        "MainFoodDesc.MainFoodDescription," & _
+        "MainFoodDesc.AbbreviatedMainFoodDescription," & _
+        "MainFoodDesc.FortificationIdentifier," & _
+        "MoistNFatAdjust.MoistureChange," & _
+        "MoistNFatAdjust.FatChange," & _
+        "MoistNFatAdjust.TypeOfFat " & _
+        "FROM MainFoodDesc INNER JOIN MoistNFatAdjust ON " & _
+        "MainFoodDesc.FoodCode = MoistNFatAdjust.FoodCode AND " & _
+        "MainFoodDesc.Version = MoistNFatAdjust.Version " & _
+        "ORDER BY MainFoodDesc.FoodCode," & _
+        "MainFoodDesc.Version"
     Set rst2 = New ADODB.Recordset
     Call rst2.Open(SQL, cnnFNDDS, adOpenStatic, adLockReadOnly, adCmdText)
 
@@ -445,7 +440,7 @@ Private Sub AppendFoodDescr()
             '--Additional description(s)
             Call UpdateAdditionalDescriptions(CLng(rst2("FoodCode")), lngVersion, rst1)
             '--Fortification code
-            .Fields("FortificationCode") = .Fields("FortificationIdentifier")
+            .Fields("FortificationCode") = rst2("FortificationIdentifier")
             '--Moisture/fat change
             .Fields("MoistureChange") = Format(CDbl(rst2("MoistureChange")) / 100, "0.000")
             .Fields("FatChange") = Format(CDbl(rst2("FatChange")) / 100, "0.000")
@@ -478,7 +473,7 @@ Private Sub AppendFoodDescr()
         "ModificationCode," & _
         "Version," & _
         "ModificationDescription " & _
-        "FROM tblModDesc " & _
+        "FROM ModDesc " & _
         "ORDER BY FoodCode," & _
         "ModificationCode," & _
         "Version"
@@ -493,7 +488,6 @@ Private Sub AppendFoodDescr()
             .Fields("ModCode") = rst2("ModificationCode")
             .Fields("Version") = lngVersion
             .Fields("MainDescription") = rst2("ModificationDescription")
-            .Fields("IncludesCount") = 0
             .Update
         End With
         rst2.MoveNext
@@ -524,11 +518,11 @@ Private Sub AppendFoodSearch()
     Call rst1.Open(SQL, cnnBack, adOpenKeyset, adLockOptimistic, adCmdText)
 
     '--Old table
-    SQL = "SELECT tblMainFoodDesc.FoodCode," & _
-        "tblMainFoodDesc.Version," & _
-        "tblMainFoodDesc.MainFoodDescription " & _
-        "FROM tblMainFoodDesc " & _
-        "ORDER BY tblMainFoodDesc.FoodCode"
+    SQL = "SELECT MainFoodDesc.FoodCode," & _
+        "MainFoodDesc.Version," & _
+        "MainFoodDesc.MainFoodDescription " & _
+        "FROM MainFoodDesc " & _
+        "ORDER BY MainFoodDesc.FoodCode"
     Set rst2 = New ADODB.Recordset
     Call rst2.Open(SQL, cnnFNDDS, adOpenStatic, adLockReadOnly, adCmdText)
 
@@ -552,7 +546,7 @@ Private Sub AppendFoodSearch()
         "ModificationCode," & _
         "Version," & _
         "ModificationDescription " & _
-        "FROM tblModDesc " & _
+        "FROM ModDesc " & _
         "ORDER BY FoodCode," & _
         "ModificationCode"
     Set rst2 = New ADODB.Recordset
@@ -575,13 +569,13 @@ Private Sub AppendFoodSearch()
     Set rst2 = Nothing
     
     '--Old table (adds)
-    SQL = "SELECT tblAddFoodDesc.FoodCode," & _
-        "tblAddFoodDesc.SeqNum," & _
-        "tblAddFoodDesc.Version," & _
-        "tblAddFoodDesc.AdditionalFoodDescription " & _
-        "FROM tblAddFoodDesc " & _
-        "ORDER BY tblAddFoodDesc.FoodCode," & _
-        "tblAddFoodDesc.SeqNum"
+    SQL = "SELECT AddFoodDesc.FoodCode," & _
+        "AddFoodDesc.SeqNum," & _
+        "AddFoodDesc.Version," & _
+        "AddFoodDesc.AdditionalFoodDescription " & _
+        "FROM AddFoodDesc " & _
+        "ORDER BY AddFoodDesc.FoodCode," & _
+        "AddFoodDesc.SeqNum"
     Set rst2 = New ADODB.Recordset
     Call rst2.Open(SQL, cnnFNDDS, adOpenStatic, adLockReadOnly, adCmdText)
 
@@ -634,12 +628,7 @@ Private Sub AppendFoodSuggest()
         "ModCode," & _
         "Version," & _
         "MainDescription," & _
-        "IncludesCount," & _
-        "IncludesText1," & _
-        "IncludesText2," & _
-        "IncludesText3," & _
-        "IncludesText4," & _
-        "IncludesText5 " & _
+        "IncludesDescription " & _
         "FROM fooddescr " & _
         "ORDER BY FoodCode," & _
         "Version"
@@ -1026,22 +1015,10 @@ Private Sub AppendFoodSuggest()
         
         '--Additional food descriptions
         lngType = 2
-        Select Case CLng(rst2("IncludesCount"))
-            Case 0
-                strDescription = vbNullString
-            Case 1
-                strDescription = rst2("IncludesText1")
-            Case 2
-                strDescription = rst2("IncludesText1") & rst2("IncludesText2")
-            Case 3
-                strDescription = rst2("IncludesText1") & rst2("IncludesText2") & rst2("IncludesText3")
-            Case 4
-                strDescription = rst2("IncludesText1") & rst2("IncludesText2") & rst2("IncludesText3") & rst2("IncludesText4")
-            Case 5
-                strDescription = rst2("IncludesText1") & rst2("IncludesText2") & rst2("IncludesText3") & rst2("IncludesText4") & rst2("IncludesText5")
-            Case Else
-                Stop
-        End Select
+        strDescription = vbNullString
+        If Not IsNull(rst2("IncludesDescription")) Then
+            strDescription = rst2("IncludesDescription")
+        End If
         If Len(strDescription) > 0 Then
             Select Case lngFoodCode
                 Case 23150270
@@ -1276,12 +1253,7 @@ Private Sub AppendFoodWords()
         "ModCode," & _
         "Version," & _
         "MainDescription," & _
-        "IncludesCount," & _
-        "IncludesText1," & _
-        "IncludesText2," & _
-        "IncludesText3," & _
-        "IncludesText4," & _
-        "IncludesText5 " & _
+        "IncludesDescription " & _
         "FROM fooddescr " & _
         "ORDER BY FoodCode," & _
         "Version"
@@ -1327,22 +1299,7 @@ Private Sub AppendFoodWords()
         
         '--Additional food descriptions
         lngType = 2
-        Select Case CLng(rst2("IncludesCount"))
-            Case 0
-                strDescription = vbNullString
-            Case 1
-                strDescription = rst2("IncludesText1")
-            Case 2
-                strDescription = rst2("IncludesText1") & rst2("IncludesText2")
-            Case 3
-                strDescription = rst2("IncludesText1") & rst2("IncludesText2") & rst2("IncludesText3")
-            Case 4
-                strDescription = rst2("IncludesText1") & rst2("IncludesText2") & rst2("IncludesText3") & rst2("IncludesText4")
-            Case 5
-                strDescription = rst2("IncludesText1") & rst2("IncludesText2") & rst2("IncludesText3") & rst2("IncludesText4") & rst2("IncludesText5")
-            Case Else
-                Stop
-        End Select
+        strDescription = rst2("IncludesDescription")
         If Len(strDescription) > 0 Then
             Select Case lngFoodCode
                 Case 64104200
@@ -1432,36 +1389,36 @@ Private Sub AppendIngredients()
     rst1.Open SQL, cnnBack, adOpenKeyset, adLockOptimistic, adCmdText
     
     '--Old table
-    SQL = "SELECT tblFNDDSSRLinks.FoodCode," & _
-        "tblFNDDSSRLinks.SeqNum," & _
-        "tblFNDDSSRLinks.Version," & _
-        "tblFNDDSSRLinks.SRCode," & _
-        "tblFNDDSSRLinks.SRDescription," & _
-        "tblFNDDSSRLinks.Amount," & _
-        "tblFNDDSSRLinks.Measure," & _
-        "tblFNDDSSRLinks.PortionCode," & _
-        "tblFNDDSSRLinks.RetentionCode," & _
-        "tblFNDDSSRLinks.Flag," & _
-        "tblFNDDSSRLinks.Weight," & _
-        "tblFNDDSSRLinks.ChangeTypeToSRCode," & _
-        "tblFNDDSSRLinks.ChangeTypeToWeight," & _
-        "tblFNDDSSRLinks.ChangeTypeToRetnCode " & _
-        "FROM tblFNDDSSRLinks " & _
-        "ORDER BY tblFNDDSSRLinks.FoodCode," & _
-        "tblFNDDSSRLinks.Version," & _
-        "tblFNDDSSRLinks.SeqNum"
+    SQL = "SELECT FnddsSrLinks.FoodCode," & _
+        "FnddsSrLinks.SeqNum," & _
+        "FnddsSrLinks.Version," & _
+        "FnddsSrLinks.SRCode," & _
+        "FnddsSrLinks.SRDescription," & _
+        "FnddsSrLinks.Amount," & _
+        "FnddsSrLinks.Measure," & _
+        "FnddsSrLinks.PortionCode," & _
+        "FnddsSrLinks.RetentionCode," & _
+        "FnddsSrLinks.Flag," & _
+        "FnddsSrLinks.Weight," & _
+        "FnddsSrLinks.ChangeTypeToSRCode," & _
+        "FnddsSrLinks.ChangeTypeToWeight," & _
+        "FnddsSrLinks.ChangeTypeToRetnCode " & _
+        "FROM FnddsSrLinks " & _
+        "ORDER BY FnddsSrLinks.FoodCode," & _
+        "FnddsSrLinks.Version," & _
+        "FnddsSrLinks.SeqNum"
     Set rst2 = New ADODB.Recordset
     rst2.Open SQL, cnnFNDDS, adOpenStatic, adLockReadOnly, adCmdText
     
     Do Until rst2.EOF
         lngFoodCode = CLng(rst2("FoodCode"))
         lngVersion = CLng(rst2("Version"))
-        strSRCode = rst2("SRCode")
+        strSRCode = SRCode(rst2("SRCode"))
         strDescription = rst2("SRDescription")
         strSRDescr = SRDescription(strSRCode, lngVersion, strDescription)
         strMeasure = vbNullString
         If Not IsNull(rst2("Measure")) Then
-            strMeasure = rst2("Measure")
+            strMeasure = Trim$(rst2("Measure"))
         End If
         lngPortionCode = CLng(rst2("PortionCode"))
         lngRetentionCode = CLng(rst2("RetentionCode"))
@@ -1570,7 +1527,7 @@ Private Sub AppendIngredSearch()
         "SRDescription AS Description," & _
         "Flag," & _
         "Version " & _
-        "FROM tblFNDDSSRLinks " & _
+        "FROM FnddsSrLinks " & _
         "GROUP BY FoodCode," & _
         "SRCode," & _
         "SRDescription," & _
@@ -1590,7 +1547,7 @@ Private Sub AppendIngredSearch()
             lngSeqNum = 1
             strFoodModKey = CStr(lngFoodCode) & "_" & CStr(lngModCode)
         End If
-        strSRCode = rst2("SRCode")
+        strSRCode = SRCode(rst2("SRCode"))
         strDescription = rst2("Description")
         lngVersion = CLng(rst2("Version"))
         strSRDescr = SRDescription(strSRCode, lngVersion, strDescription)
@@ -1959,7 +1916,7 @@ Private Sub AppendNutrientDescr()
         "Tagname," & _
         "Unit," & _
         "Decimals " & _
-        "FROM tblNutDesc " & _
+        "FROM NutDesc " & _
         "ORDER BY NutrientCode," & _
         "Version"
     Set rst2 = New ADODB.Recordset
@@ -2045,7 +2002,7 @@ Private Sub AppendNutrients()
         "NutrientCode," & _
         "Version," & _
         "NutrientValue " & _
-        "FROM tblFNDDSNutVal " & _
+        "FROM FnddsNutVal " & _
         "ORDER BY FoodCode," & _
         "NutrientCode," & _
         "Version"
@@ -2083,7 +2040,7 @@ Private Sub AppendNutrients()
         "NutrientCode," & _
         "Version," & _
         "NutrientValue " & _
-        "FROM tblModNut " & _
+        "FROM ModNutVal " & _
         "ORDER BY FoodCode," & _
         "ModificationCode," & _
         "NutrientCode," & _
@@ -2151,18 +2108,18 @@ Private Sub AppendPortions()
     rst1.Open SQL, cnnBack, adOpenKeyset, adLockOptimistic, adCmdText
     
     '--Old table
-    SQL = "SELECT tblFoodWeights.FoodCode," & _
-        "tblFoodWeights.Subcode," & _
-        "tblFoodWeights.SeqNum," & _
-        "tblFoodWeights.PortionCode," & _
-        "tblFoodWeights.Version," & _
-        "tblFoodWeights.PortionWeight," & _
-        "tblFoodWeights.ChangeType " & _
-        "FROM tblFoodWeights " & _
-        "ORDER BY tblFoodWeights.FoodCode," & _
-        "tblFoodWeights.Subcode," & _
-        "tblFoodWeights.SeqNum," & _
-        "tblFoodWeights.Version"
+    SQL = "SELECT FoodWeights.FoodCode," & _
+        "FoodWeights.Subcode," & _
+        "FoodWeights.SeqNum," & _
+        "FoodWeights.PortionCode," & _
+        "FoodWeights.Version," & _
+        "FoodWeights.PortionWeight," & _
+        "FoodWeights.ChangeType " & _
+        "FROM FoodWeights " & _
+        "ORDER BY FoodWeights.FoodCode," & _
+        "FoodWeights.Subcode," & _
+        "FoodWeights.SeqNum," & _
+        "FoodWeights.Version"
     Set rst2 = New ADODB.Recordset
     rst2.Open SQL, cnnFNDDS, adOpenStatic, adLockReadOnly, adCmdText
     
@@ -2758,26 +2715,21 @@ Private Sub CreateTables()
     '--Create food description table
     SQL = "CREATE TABLE fooddescr" & _
         "(" & _
-        "FoodCode           INT," & _
-        "ModCode            INT DEFAULT 0," & _
-        "Version            INT," & _
-        "MainDescription    VARCHAR(240)," & _
-        "AbbrDescription    VARCHAR(60)," & _
-        "IncludesCount      INT," & _
-        "IncludesText1      VARCHAR(255)," & _
-        "IncludesText2      VARCHAR(255)," & _
-        "IncludesText3      VARCHAR(255)," & _
-        "IncludesText4      VARCHAR(255)," & _
-        "IncludesText5      VARCHAR(255)," & _
-        "FortificationCode  INT DEFAULT 0," & _
-        "MoistureChange     DECIMAL(6,3)," & _
-        "FatChange          DECIMAL(6,3)," & _
-        "FatCode            VARCHAR(8)," & _
-        "FatDescription     VARCHAR(200)," & _
-        "WeightInitial      DECIMAL(8,3)," & _
-        "WeightChange       DECIMAL(8,3)," & _
-        "WeightFinal        DECIMAL(8,3)," & _
-        "Created            DATETIME DEFAULT CURRENT_TIMESTAMP," & _
+        "FoodCode               INT," & _
+        "ModCode                INT DEFAULT 0," & _
+        "Version                INT," & _
+        "MainDescription        VARCHAR(240)," & _
+        "AbbrDescription        VARCHAR(60)," & _
+        "IncludesDescription    VARCHAR(2048)," & _
+        "FortificationCode      INT DEFAULT 0," & _
+        "MoistureChange         DECIMAL(6,3)," & _
+        "FatChange              DECIMAL(6,3)," & _
+        "FatCode                VARCHAR(8)," & _
+        "FatDescription         VARCHAR(200)," & _
+        "WeightInitial          DECIMAL(8,3)," & _
+        "WeightChange           DECIMAL(8,3)," & _
+        "WeightFinal            DECIMAL(8,3)," & _
+        "Created                DATETIME DEFAULT CURRENT_TIMESTAMP," & _
         "CONSTRAINT pk_fooddesrc PRIMARY KEY (FoodCode, ModCode, Version)" & _
         ")"
     cnnBack.Execute SQL, lng, adCmdText
@@ -2813,7 +2765,7 @@ Private Sub CreateTables()
         "FoodCode           INT," & _
         "ModCode            INT DEFAULT 0," & _
         "Subcode            INT," & _
-        "SubcodeDescr       VARCHAR(60)," & _
+        "SubcodeDescr       VARCHAR(80)," & _
         "SeqNum             INT," & _
         "Version            INT," & _
         "PortionCode        INT," & _
@@ -3482,18 +3434,18 @@ End Function
 Public Sub ExportData(Version As FNDDSVersionNumber)
     
     '--Export record(s)
-    'Call ExportFoodDescr(Version)
-    'Call ExportFoodSearch(Version)
+    Call ExportFoodDescr(Version)
+    Call ExportFoodSearch(Version)
     ' Call AppendFoodSuggest
     ' Call AppendFoodWords
-    'Call ExportPortions(Version)
-    'Call ExportTagname(Version)
-    'Call ExportNutrientDescr(Version)
-    'Call ExportNutrients(Version)
+    Call ExportPortions(Version)
+    Call ExportTagname(Version)
+    Call ExportNutrientDescr(Version)
+    Call ExportNutrients(Version)
     ' Call AppendEquivalentDescr
     ' Call AppendEquivalents
-    'Call ExportIngredients(Version)
-    'Call AppendIngredSearch
+    Call ExportIngredients(Version)
+    Call ExportIngredSearch(Version)
     'Call AppendIngredSuggest
 
 End Sub
@@ -3524,7 +3476,6 @@ End Function
 Private Sub ExportFoodDescr(Version As FNDDSVersionNumber)
 
     Dim SQL As String
-    Dim lngIncludesCount As Long
     Dim lngIndex As Long
     Dim strFieldName As String
     Dim strFileName As String
@@ -3540,12 +3491,7 @@ Private Sub ExportFoodDescr(Version As FNDDSVersionNumber)
         "Version," & _
         "MainDescription," & _
         "AbbrDescription," & _
-        "IncludesCount," & _
-        "IncludesText1," & _
-        "IncludesText2," & _
-        "IncludesText3," & _
-        "IncludesText4," & _
-        "IncludesText5," & _
+        "IncludesDescription," & _
         "FortificationCode," & _
         "MoistureChange," & _
         "FatChange," & _
@@ -3562,7 +3508,10 @@ Private Sub ExportFoodDescr(Version As FNDDSVersionNumber)
     Call rst.Open(SQL, cnnBack, adOpenKeyset, adLockOptimistic, adCmdText)
     
     strFolderName = fso.BuildPath(SQL_PATH, ExportFolderName(Version))
-    strFileName = fso.BuildPath(strFolderName, "Inserts_01_FoodDescr.sql")
+    If fso.FolderExists(strFolderName) = False Then
+        Call fso.CreateFolder(strFolderName)
+    End If
+    strFileName = fso.BuildPath(strFolderName, "Inserts_01_FoodDescr_v" & Version & ".sql")
     Set txt = fso.CreateTextFile(strFileName)
     
     Call txt.WriteLine("-- ----------------------------------------------------------------------")
@@ -3570,46 +3519,23 @@ Private Sub ExportFoodDescr(Version As FNDDSVersionNumber)
     Call txt.WriteLine("-- ----------------------------------------------------------------------")
     
     strInsert = "INSERT INTO FoodDescr (FoodCode, ModCode, Version, MainDescription, AbbrDescription, " & _
-        "IncludesText, FortificationCode, MoistureChange, FatChange, FatCode, FatDescription, " & _
+        "IncludesDescription, FortificationCode, MoistureChange, FatChange, FatCode, FatDescription, " & _
         "WeightInitial, WeightChange, WeightFinal)"
     Call txt.WriteLine(strInsert)
     Call txt.Write("VALUES ")
     
     Do Until rst.EOF
         strValues = vbNullString
-        lngIncludesCount = 0
         For Each fld In rst.Fields
             Select Case fld.name
                 Case "FoodCode", "ModCode", "Version" '-- Keys
                     strValues = strValues & fld.Value & ", "
-                Case "MainDescription", "AbbrDescription", "FatCode", "FatDescription" '-- Strings
+                Case "MainDescription", "AbbrDescription", "IncludesDescription", "FatCode", "FatDescription" '-- Strings
                     If IsNull(fld.Value) Then
                         strValues = strValues & "NULL, "
                     Else
                         strValues = strValues & "'" & Utility.EscapedString(fld.Value) & "', "
                     End If
-                Case "IncludesCount"
-                    If IsNull(fld.Value) = False Then
-                        lngIncludesCount = CLng(rst("IncludesCount"))
-                    End If
-                Case "IncludesText1"
-                    Select Case lngIncludesCount
-                        Case 0
-                            strValues = strValues & "NULL, "
-                        Case 1
-                            strValues = strValues & "'" & Utility.EscapedString(rst("IncludesText1")) & "', "
-                        Case 2
-                            strValues = strValues & "'" & Utility.EscapedString(Trim$(rst("IncludesText1")) & " " & Trim$(rst("IncludesText2"))) & "', "
-                        Case 3
-                            strValues = strValues & "'" & Utility.EscapedString(Trim$(rst("IncludesText1")) & " " & Trim$(rst("IncludesText2")) & " " & Trim$(rst("IncludesText3"))) & "', "
-                        Case 4
-                            strValues = strValues & "'" & Utility.EscapedString(Trim$(rst("IncludesText1")) & " " & Trim$(rst("IncludesText2")) & " " & Trim$(rst("IncludesText3")) & " " & Trim$(rst("IncludesText4"))) & "', "
-                        Case 5
-                            strValues = strValues & "'" & Utility.EscapedString(Trim$(rst("IncludesText1")) & " " & Trim$(rst("IncludesText2")) & " " & Trim$(rst("IncludesText3")) & " " & Trim$(rst("IncludesText4")) & " " & Trim$(rst("IncludesText5"))) & "', "
-                        Case Else
-                            Stop
-                    End Select
-                Case "IncludesText2", "IncludesText3", "IncludesText4", "IncludesText5"
                 Case "FortificationCode" '-- Integers
                     If IsNull(fld.Value) Then
                         strValues = strValues & "NULL, "
@@ -3676,7 +3602,10 @@ Private Sub ExportFoodSearch(Version As FNDDSVersionNumber)
     Call rst.Open(SQL, cnnBack, adOpenKeyset, adLockOptimistic, adCmdText)
     
     strFolderName = fso.BuildPath(SQL_PATH, ExportFolderName(Version))
-    strFileName = fso.BuildPath(strFolderName, "Inserts_02_FoodSearch.sql")
+    If fso.FolderExists(strFolderName) = False Then
+        Call fso.CreateFolder(strFolderName)
+    End If
+    strFileName = fso.BuildPath(strFolderName, "Inserts_02_FoodSearch_v" & Version & ".sql")
     Set txt = fso.CreateTextFile(strFileName)
     
     Call txt.WriteLine("-- ----------------------------------------------------------------------")
@@ -3768,7 +3697,10 @@ Private Sub ExportIngredients(Version As FNDDSVersionNumber)
     Call rst.Open(SQL, cnnBack, adOpenKeyset, adLockOptimistic, adCmdText)
     
     strFolderName = fso.BuildPath(SQL_PATH, ExportFolderName(Version))
-    strFileName = fso.BuildPath(strFolderName, "Inserts_09_Ingredients.sql")
+    If fso.FolderExists(strFolderName) = False Then
+        Call fso.CreateFolder(strFolderName)
+    End If
+    strFileName = fso.BuildPath(strFolderName, "Inserts_09_Ingredients_v" & Version & ".sql")
     Set txt = fso.CreateTextFile(strFileName)
     
     Call txt.WriteLine("-- ----------------------------------------------------------------------")
@@ -3839,6 +3771,89 @@ Private Sub ExportIngredients(Version As FNDDSVersionNumber)
 
 End Sub
 
+Private Sub ExportIngredSearch(Version As FNDDSVersionNumber)
+
+    Dim SQL As String
+    Dim lngIndex As Long
+    Dim strFileName As String
+    Dim strFolderName As String
+    Dim strInsert As String
+    Dim strValues As String
+    Dim fld As ADODB.Field
+    Dim rst As ADODB.Recordset
+    Dim txt As Scripting.TextStream
+    
+    SQL = "SELECT FoodCode," & _
+        "ModCode," & _
+        "SeqNum," & _
+        "IngredType," & _
+        "IngrCode," & _
+        "IngrDescr," & _
+        "IngrDescrAlt," & _
+        "Version " & _
+        "FROM ingredsearch " & _
+        "WHERE (Version = " & Version & ")" & _
+        "ORDER BY FoodCode," & _
+        "ModCode," & _
+        "SeqNum"
+    Set rst = New ADODB.Recordset
+    Call rst.Open(SQL, cnnBack, adOpenKeyset, adLockOptimistic, adCmdText)
+    
+    strFolderName = fso.BuildPath(SQL_PATH, ExportFolderName(Version))
+    If fso.FolderExists(strFolderName) = False Then
+        Call fso.CreateFolder(strFolderName)
+    End If
+    strFileName = fso.BuildPath(strFolderName, "Inserts_10_IngredSearch_v" & Version & ".sql")
+    Set txt = fso.CreateTextFile(strFileName)
+    
+    Call txt.WriteLine("-- ----------------------------------------------------------------------")
+    Call txt.WriteLine("-- Ingredients Search Table (Version " & Version & ")")
+    Call txt.WriteLine("-- ----------------------------------------------------------------------")
+    
+    strInsert = "INSERT INTO FoodSearch (FoodCode, ModCode, SeqNum, IngredType, IngrCode, IngrDescr, IngrDescrAlt, Version)"
+    Call txt.WriteLine(strInsert)
+    Call txt.Write("VALUES ")
+    
+    Do Until rst.EOF
+        strValues = vbNullString
+        For Each fld In rst.Fields
+            Select Case fld.name
+                Case "FoodCode", "ModCode", "SeqNum", "IngredType", "IngrCode", "Version" '-- Keys
+                    strValues = strValues & fld.Value & ", "
+                Case "IngrDescr", "IngrDescrAlt" '-- Strings
+                    If IsNull(fld.Value) Then
+                        strValues = strValues & "NULL, "
+                    Else
+                        strValues = strValues & "'" & Utility.EscapedString(fld.Value) & "', "
+                    End If
+                Case Else
+                    Stop
+            End Select
+        Next fld
+        
+        If lngIndex > 999 Then
+            Call txt.WriteLine(strInsert)
+            Call txt.Write("VALUES ")
+            lngIndex = 0
+        End If
+        
+        If lngIndex > 0 Then
+            Call txt.Write("   ")
+        End If
+        Call txt.WriteLine("(" & strValues & ")")
+        lngIndex = lngIndex + 1
+        
+        rst.MoveNext
+    Loop
+    
+    txt.Close
+    Set txt = Nothing
+    
+    rst.Close
+    Set rst = Nothing
+
+End Sub
+
 Private Sub ExportNutrientDescr(Version As FNDDSVersionNumber)
 
     Dim SQL As String
@@ -3859,7 +3874,10 @@ Private Sub ExportNutrientDescr(Version As FNDDSVersionNumber)
     Call rst.Open(SQL, cnnBack, adOpenKeyset, adLockOptimistic, adCmdText)
     
     strFolderName = fso.BuildPath(SQL_PATH, ExportFolderName(Version))
-    strFileName = fso.BuildPath(strFolderName, "Inserts_05_NutrientDescr.sql")
+    If fso.FolderExists(strFolderName) = False Then
+        Call fso.CreateFolder(strFolderName)
+    End If
+    strFileName = fso.BuildPath(strFolderName, "Inserts_05_NutrientDescr_v" & Version & ".sql")
     Set txt = fso.CreateTextFile(strFileName)
     
     Call txt.WriteLine("-- ----------------------------------------------------------------------")
@@ -3927,7 +3945,6 @@ End Sub
 Private Sub ExportNutrients(Version As FNDDSVersionNumber)
 
     Dim SQL As String
-    Dim lngFileNumber As Long
     Dim lngIndex As Long
     Dim lngIndexTotal As Long
     Dim strFileName As String
@@ -3950,13 +3967,15 @@ Private Sub ExportNutrients(Version As FNDDSVersionNumber)
     Set rst = New ADODB.Recordset
     Call rst.Open(SQL, cnnBack, adOpenKeyset, adLockOptimistic, adCmdText)
     
-    lngFileNumber = 1
     strFolderName = fso.BuildPath(SQL_PATH, ExportFolderName(Version))
-    strFileName = fso.BuildPath(strFolderName, "Inserts_06_Nutrients_" & CStr(lngFileNumber) & ".sql")
+    If fso.FolderExists(strFolderName) = False Then
+        Call fso.CreateFolder(strFolderName)
+    End If
+    strFileName = fso.BuildPath(strFolderName, "Inserts_06_Nutrients_v" & Version & ".sql")
     Set txt = fso.CreateTextFile(strFileName)
     
     strHeaderLine = "-- ----------------------------------------------------------------------"
-    strHeaderText = "-- Nutrients Table (Version " & Version & ") File " & lngFileNumber
+    strHeaderText = "-- Nutrients Table (Version " & Version & ")"
     
     Call txt.WriteLine(strHeaderLine)
     Call txt.WriteLine(strHeaderText)
@@ -3988,23 +4007,6 @@ Private Sub ExportNutrients(Version As FNDDSVersionNumber)
         Next fld
         
         If lngIndex > 999 Then
-            If lngIndexTotal > 299000 Then
-                '-- Close current file
-                txt.Close
-                Set txt = Nothing
-                
-                '-- Open new file
-                lngFileNumber = lngFileNumber + 1
-                strFileName = fso.BuildPath(strFolderName, "Inserts_06_Nutrients_" & CStr(lngFileNumber) & ".sql")
-                Set txt = fso.CreateTextFile(strFileName)
-                
-                strHeaderText = "-- Nutrients Table (Version " & Version & ") File " & lngFileNumber
-                Call txt.WriteLine(strHeaderLine)
-                Call txt.WriteLine(strHeaderText)
-                Call txt.WriteLine(strHeaderLine)
-                
-                lngIndexTotal = 0
-            End If
             Call txt.WriteLine(strInsertLine1)
             Call txt.Write(strInsertLine2)
             lngIndex = 0
@@ -4062,7 +4064,10 @@ Private Sub ExportPortions(Version As FNDDSVersionNumber)
     Call rst.Open(SQL, cnnBack, adOpenKeyset, adLockOptimistic, adCmdText)
     
     strFolderName = fso.BuildPath(SQL_PATH, ExportFolderName(Version))
-    strFileName = fso.BuildPath(strFolderName, "Inserts_03_Portions.sql")
+    If fso.FolderExists(strFolderName) = False Then
+        Call fso.CreateFolder(strFolderName)
+    End If
+    strFileName = fso.BuildPath(strFolderName, "Inserts_03_Portions_v" & Version & ".sql")
     Set txt = fso.CreateTextFile(strFileName)
     
     Call txt.WriteLine("-- ----------------------------------------------------------------------")
@@ -4159,7 +4164,10 @@ Private Sub ExportTagname(Version As FNDDSVersionNumber)
     Call rst.Open(SQL, cnnBack, adOpenKeyset, adLockOptimistic, adCmdText)
     
     strFolderName = fso.BuildPath(SQL_PATH, ExportFolderName(Version))
-    strFileName = fso.BuildPath(strFolderName, "Inserts_04_Tagname.sql")
+    If fso.FolderExists(strFolderName) = False Then
+        Call fso.CreateFolder(strFolderName)
+    End If
+    strFileName = fso.BuildPath(strFolderName, "Inserts_04_Tagname_v" & Version & ".sql")
     Set txt = fso.CreateTextFile(strFileName)
     
     Call txt.WriteLine("-- ----------------------------------------------------------------------")
@@ -4582,7 +4590,7 @@ Public Sub ImportData()
     '--Append record(s)
     Call AppendFoodDescr
     Call AppendFoodSearch
-    'Call AppendFoodSuggest
+    Call AppendFoodSuggest
     'Call AppendFoodWords
     Call AppendPortions
     Call AppendTagname
@@ -4592,7 +4600,7 @@ Public Sub ImportData()
     'Call AppendEquivalents
     Call AppendIngredients
     Call AppendIngredSearch
-    'Call AppendIngredSuggest
+    Call AppendIngredSuggest
 
 End Sub
 
@@ -4846,7 +4854,7 @@ Public Sub OpenCommands()
     With comAddtlDescr_Lkp
         .ActiveConnection = cnnFNDDS
         .CommandText = "SELECT AdditionalFoodDescription " & _
-            "FROM tblAddFoodDesc " & _
+            "FROM AddFoodDesc " & _
             "WHERE (FoodCode = ?) AND " & _
             "(Version = ?) " & _
             "ORDER BY SeqNum"
@@ -4927,7 +4935,7 @@ Public Sub OpenCommands()
     With comFCDescr_Lkp
         .ActiveConnection = cnnFNDDS
         .CommandText = "SELECT MainFoodDescription AS Description " & _
-            "FROM tblMainFoodDesc " & _
+            "FROM MainFoodDesc " & _
             "WHERE (FoodCode = ?) AND " & _
             "(Version = ?)"
         .CommandType = adCmdText
@@ -5030,7 +5038,7 @@ Public Sub OpenCommands()
 '        .ActiveConnection = cnnFNDDS
 '        .CommandText = "SELECT NutrientCode," & _
 '            "NutrientValue " & _
-'            "FROM tblModNut " & _
+'            "FROM ModNutVal " & _
 '            "WHERE (FoodCode = ?) AND " & _
 '            "(ModificationCode = ?) AND " & _
 '            "(Version = ?) " & _
@@ -5105,7 +5113,7 @@ Public Sub OpenCommands()
 '        .ActiveConnection = cnnFNDDS
 '        .CommandText = "SELECT NutrientCode," & _
 '            "NutrientValue " & _
-'            "FROM tblFNDDSNutVal " & _
+'            "FROM AddFoodDesc " & _
 '            "WHERE (FoodCode = ?) AND " & _
 '            "(Version = ?) " & _
 '            "ORDER BY NutrientCode"
@@ -5124,7 +5132,7 @@ Public Sub OpenCommands()
         .ActiveConnection = cnnFNDDS
         .CommandText = "SELECT PortionDescription," & _
             "ChangeType " & _
-            "FROM tblFoodPortionDesc " & _
+            "FROM FoodPortionDesc " & _
             "WHERE (PortionCode = ?) AND " & _
             "(Version = ?)"
         .CommandType = adCmdText
@@ -5167,7 +5175,7 @@ Public Sub OpenCommands()
     With comRecipeWeight_Lkp
         .ActiveConnection = cnnFNDDS
         .CommandText = "SELECT SUM(Weight) AS InitialWeight " & _
-            "FROM tblFNDDSSRLinks " & _
+            "FROM FnddsSrLinks " & _
             "WHERE (FoodCode = ?) AND " & _
             "(Version = ?)"
         .CommandType = adCmdText
@@ -5215,7 +5223,7 @@ Public Sub OpenCommands()
     With comSubcode_Lkp
         .ActiveConnection = cnnFNDDS
         .CommandText = "SELECT SubcodeDescription " & _
-            "FROM tblSubcodeDesc " & _
+            "FROM SubcodeDesc " & _
             "WHERE (Subcode = ?) AND " & _
             "(Version = ?)"
         .CommandType = adCmdText
@@ -5321,7 +5329,7 @@ Public Sub OpenCommands()
     With comTagname_Lkp
         .ActiveConnection = cnnFNDDS
         .CommandText = "SELECT Tagname " & _
-            "FROM tblNutDesc " & _
+            "FROM NutDesc " & _
             "WHERE (NutrientCode = ?) AND " & _
             "(Version = ?)"
         .CommandType = adCmdText
@@ -5496,6 +5504,21 @@ Private Function RetentionDescription(RetCode As String) As String
 
 End Function
 
+Private Function SRCode(Code As String) As String
+
+    Dim lngLen As Long
+    Dim strCode As String
+
+    strCode = Trim$(Code)
+    lngLen = Len(strCode)
+    If lngLen < 5 Then
+        SRCode = String(5 - lngLen, "0") & strCode
+    Else
+        SRCode = strCode
+    End If
+
+End Function
+
 Private Function SRDescription(SRCode As String, Version As Long, Abbreviation As String) As String
 
     Dim blnFound As Boolean
@@ -5588,9 +5611,7 @@ End Function
 Private Sub UpdateAdditionalDescriptions(FoodCode As Long, Version As Long, Recordset As ADODB.Recordset)
 
     Dim l As Long
-    Dim lngIncludesCount As Long
-    Dim strInclude As String
-    Dim strIncludesText(9) As String
+    Dim strIncludesDescription As String
     
     comAddtlDescr_Lkp("@FoodCode") = FoodCode
     comAddtlDescr_Lkp("@Version") = Version
@@ -5599,37 +5620,25 @@ Private Sub UpdateAdditionalDescriptions(FoodCode As Long, Version As Long, Reco
     With rstAddtlDescr_Lkp
         If .RecordCount > 0 Then
             l = 0
-            lngIncludesCount = 1
+            strIncludesDescription = vbNullString
             Do Until .EOF
+                strIncludesDescription = strIncludesDescription & .Fields("AdditionalFoodDescription")
                 l = l + 1
-                If Len(strInclude) + Len(.Fields("AdditionalFoodDescription")) > 249 Then
-                    strIncludesText(lngIncludesCount - 1) = strInclude
-                    lngIncludesCount = lngIncludesCount + 1
-                    strInclude = .Fields("AdditionalFoodDescription")
-                Else
-                    strInclude = strInclude & .Fields("AdditionalFoodDescription")
-                End If
                 .MoveNext
                 If Not .EOF Then
                     If l = (.RecordCount - 1) Then
-                        strInclude = strInclude & "; or "
+                        strIncludesDescription = strIncludesDescription & "; or "
                     Else
-                        strInclude = strInclude & "; "
+                        strIncludesDescription = strIncludesDescription & "; "
                     End If
                 End If
             Loop
-            strIncludesText(lngIncludesCount - 1) = strInclude
         End If
     End With
 
-    With Recordset
-        .Fields("IncludesCount") = lngIncludesCount
-        If lngIncludesCount > 0 Then .Fields("IncludesText1") = strIncludesText(0)
-        If lngIncludesCount > 1 Then .Fields("IncludesText2") = strIncludesText(1)
-        If lngIncludesCount > 2 Then .Fields("IncludesText3") = strIncludesText(2)
-        If lngIncludesCount > 3 Then .Fields("IncludesText4") = strIncludesText(3)
-        If lngIncludesCount > 4 Then .Fields("IncludesText5") = strIncludesText(4)
-    End With
+    If Len(strIncludesDescription) > 0 Then
+        Recordset.Fields("IncludesDescription") = strIncludesDescription
+    End If
     
 End Sub
 
@@ -5768,7 +5777,7 @@ Private Sub UpdateIngredSearch(FoodCode As Long, ModCode As Long, RecipeCode As 
     SQL = "SELECT SRCode," & _
         "SRDescription AS Description," & _
         "Flag " & _
-        "FROM tblFNDDSSRLinks " & _
+        "FROM FnddsSrLinks " & _
         "WHERE (FoodCode = " & CStr(RecipeCode) & ") AND " & _
         "(Version = " & CStr(Version) & ") " & _
         "GROUP BY SRCode," & _
@@ -5780,7 +5789,7 @@ Private Sub UpdateIngredSearch(FoodCode As Long, ModCode As Long, RecipeCode As 
     
     Do Until rst.EOF
         SeqNum = SeqNum + 1
-        strSRCode = rst("SRCode")
+        strSRCode = SRCode(rst("SRCode"))
         strDescription = rst("Description")
         strSRDescr = SRDescription(strSRCode, Version, strDescription)
         If IsNull(rst("Flag")) Then
@@ -5793,7 +5802,7 @@ Private Sub UpdateIngredSearch(FoodCode As Long, ModCode As Long, RecipeCode As 
             .Fields("FoodCode") = FoodCode
             .Fields("ModCode") = ModCode
             .Fields("SeqNum") = SeqNum
-            If Len(rst("SRCode")) = 5 Then
+            If Len(strSRCode) = 5 Then
                 lngIngredType = 1 + level
             Else
                 lngIngredType = 2 + level
