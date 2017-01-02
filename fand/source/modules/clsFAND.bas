@@ -6,7 +6,7 @@ Option Compare Database
 Option Explicit
 
 Private Const DATABASES_PATH As String = "E:\projects\fand\databases"
-Private Const SQL_PATH As String = "E:\projects\fand\databases\fand\source\sql"
+Private Const SQL_PATH As String = "E:\projects\fand\databases\fand\sql"
 
 Public Enum FNDDSVersionNumber
     fvnFNDDS1 = 1
@@ -3575,37 +3575,7 @@ Private Sub ExportFoodSearch(Version As FNDDSVersionNumber)
     Call txt.WriteLine(strInsert)
     Call txt.Write("VALUES ")
     
-    Do Until rst.EOF
-        strValues = vbNullString
-        For Each fld In rst.Fields
-            Select Case fld.name
-                Case "FoodCode", "ModCode", "SeqNum", "Version" '-- Keys
-                    strValues = strValues & fld.Value & ", "
-                Case "FoodDescription" '-- Strings
-                    If IsNull(fld.Value) Then
-                        strValues = strValues & "NULL, "
-                    Else
-                        strValues = strValues & "'" & Utility.EscapedString(fld.Value) & "', "
-                    End If
-                Case Else
-                    Stop
-            End Select
-        Next fld
-        
-        If lngIndex > 999 Then
-            Call txt.WriteLine(strInsert)
-            Call txt.Write("VALUES ")
-            lngIndex = 0
-        End If
-        
-        If lngIndex > 0 Then
-            Call txt.Write("   ")
-        End If
-        Call txt.WriteLine("(" & strValues & ")")
-        lngIndex = lngIndex + 1
-        
-        rst.MoveNext
-    Loop
+    Call ExportRecordset(txt, rst, strInsert)
     
     txt.Close
     Set txt = Nothing
@@ -3672,55 +3642,7 @@ Private Sub ExportIngredients(Version As FNDDSVersionNumber)
     Call txt.WriteLine(strInsert)
     Call txt.Write("VALUES ")
     
-    Do Until rst.EOF
-        strValues = vbNullString
-        For Each fld In rst.Fields
-            Select Case fld.name
-                Case "FoodCode", "ModCode", "SeqNum", "Version" '-- Keys
-                    strValues = strValues & fld.Value & ", "
-                Case "SRCode", "SRDescr", "SRDescrAlt", "ChangeTypeToSRCode", "Measure", "PortionDescr", "RetentionCode", "RetentionDescr", "ChangeTypeToRetnCode", "ChangeTypeToWeight" '-- Strings
-                    If IsNull(fld.Value) Then
-                        strValues = strValues & "NULL, "
-                    Else
-                        strValues = strValues & "'" & Utility.EscapedString(fld.Value) & "', "
-                    End If
-                Case "IngredType", "PortionCode", "Flag" '-- Integers
-                    If IsNull(fld.Value) Then
-                        strValues = strValues & "NULL, "
-                    Else
-                        strValues = strValues & fld.Value & ", "
-                    End If
-                Case "Amount", "Weight" '-- Decimals
-                    If IsNull(fld.Value) Then
-                        strValues = strValues & "NULL, "
-                    Else
-                        strValues = strValues & fld.Value & ", "
-                    End If
-                Case "Percentage" '-- Decimals
-                    If IsNull(fld.Value) Then
-                        strValues = strValues & "NULL"
-                    Else
-                        strValues = strValues & fld.Value
-                    End If
-                Case Else
-                    Stop
-            End Select
-        Next fld
-        
-        If lngIndex > 999 Then
-            Call txt.WriteLine(strInsert)
-            Call txt.Write("VALUES ")
-            lngIndex = 0
-        End If
-        
-        If lngIndex > 0 Then
-            Call txt.Write("   ")
-        End If
-        Call txt.WriteLine("(" & strValues & ")")
-        lngIndex = lngIndex + 1
-        
-        rst.MoveNext
-    Loop
+    Call ExportRecordset(txt, rst, strInsert)
     
     txt.Close
     Set txt = Nothing
@@ -3773,37 +3695,7 @@ Private Sub ExportIngredSearch(Version As FNDDSVersionNumber)
     Call txt.WriteLine(strInsert)
     Call txt.Write("VALUES ")
     
-    Do Until rst.EOF
-        strValues = vbNullString
-        For Each fld In rst.Fields
-            Select Case fld.name
-                Case "FoodCode", "ModCode", "SeqNum", "IngredType", "IngrCode", "Version" '-- Keys
-                    strValues = strValues & fld.Value & ", "
-                Case "IngrDescr", "IngrDescrAlt" '-- Strings
-                    If IsNull(fld.Value) Then
-                        strValues = strValues & "NULL, "
-                    Else
-                        strValues = strValues & "'" & Utility.EscapedString(fld.Value) & "', "
-                    End If
-                Case Else
-                    Stop
-            End Select
-        Next fld
-        
-        If lngIndex > 999 Then
-            Call txt.WriteLine(strInsert)
-            Call txt.Write("VALUES ")
-            lngIndex = 0
-        End If
-        
-        If lngIndex > 0 Then
-            Call txt.Write("   ")
-        End If
-        Call txt.WriteLine("(" & strValues & ")")
-        lngIndex = lngIndex + 1
-        
-        rst.MoveNext
-    Loop
+    Call ExportRecordset(txt, rst, strInsert)
     
     txt.Close
     Set txt = Nothing
@@ -3847,51 +3739,7 @@ Private Sub ExportNutrientDescr(Version As FNDDSVersionNumber)
     Call txt.WriteLine(strInsert)
     Call txt.Write("VALUES ")
     
-    Do Until rst.EOF
-        strValues = vbNullString
-        For Each fld In rst.Fields
-            Select Case fld.name
-                Case "Tagname" '-- Keys
-                    strValues = strValues & "'" & Utility.EscapedString(fld.Value) & "', "
-                Case "Version" '-- Keys
-                    strValues = strValues & fld.Value & ", "
-                Case "NutrientDescription", "Unit" '-- Strings
-                    If IsNull(fld.Value) Then
-                        strValues = strValues & "NULL, "
-                    Else
-                        strValues = strValues & "'" & Utility.EscapedString(fld.Value) & "', "
-                    End If
-                Case "Decimals" '-- Strings
-                    If IsNull(fld.Value) Then
-                        strValues = strValues & "NULL, "
-                    Else
-                        strValues = strValues & fld.Value & ", "
-                    End If
-                Case "DisplayOrder" '-- Strings
-                    If IsNull(fld.Value) Then
-                        strValues = strValues & "NULL"
-                    Else
-                        strValues = strValues & fld.Value
-                    End If
-                Case Else
-                    Stop
-            End Select
-        Next fld
-        
-        If lngIndex > 999 Then
-            Call txt.WriteLine(strInsert)
-            Call txt.Write("VALUES ")
-            lngIndex = 0
-        End If
-        
-        If lngIndex > 0 Then
-            Call txt.Write("   ")
-        End If
-        Call txt.WriteLine("(" & strValues & ")")
-        lngIndex = lngIndex + 1
-        
-        rst.MoveNext
-    Loop
+    Call ExportRecordset(txt, rst, strInsert)
     
     txt.Close
     Set txt = Nothing
@@ -3910,8 +3758,7 @@ Private Sub ExportNutrients(Version As FNDDSVersionNumber)
     Dim strFolderName As String
     Dim strHeaderLine As String
     Dim strHeaderText As String
-    Dim strInsertLine1 As String
-    Dim strInsertLine2 As String
+    Dim strInsert As String
     Dim strValues As String
     Dim fld As ADODB.Field
     Dim rst As ADODB.Recordset
@@ -3940,46 +3787,12 @@ Private Sub ExportNutrients(Version As FNDDSVersionNumber)
     Call txt.WriteLine(strHeaderText)
     Call txt.WriteLine(strHeaderLine)
     
-    strInsertLine1 = "INSERT INTO Nutrients (FoodCode, ModCode, Tagname, Version, NutrientValue)"
-    strInsertLine2 = "VALUES "
+    strInsert = "INSERT INTO Nutrients (FoodCode, ModCode, Tagname, Version, NutrientValue)"
     
-    Call txt.WriteLine(strInsertLine1)
-    Call txt.Write(strInsertLine2)
+    Call txt.WriteLine(strInsert)
+    Call txt.Write("VALUES ")
     
-    Do Until rst.EOF
-        strValues = vbNullString
-        For Each fld In rst.Fields
-            Select Case fld.name
-                Case "FoodCode", "ModCode", "Version" '-- Keys
-                    strValues = strValues & fld.Value & ", "
-                Case "Tagname" '-- Keys
-                    strValues = strValues & "'" & Utility.EscapedString(fld.Value) & "', "
-                Case "NutrientValue" '-- Decimals
-                    If IsNull(fld.Value) Then
-                        strValues = strValues & "NULL"
-                    Else
-                        strValues = strValues & fld.Value
-                    End If
-                Case Else
-                    Stop
-            End Select
-        Next fld
-        
-        If lngIndex > 999 Then
-            Call txt.WriteLine(strInsertLine1)
-            Call txt.Write(strInsertLine2)
-            lngIndex = 0
-        End If
-        
-        If lngIndex > 0 Then
-            Call txt.Write("   ")
-        End If
-        Call txt.WriteLine("(" & strValues & ")")
-        lngIndex = lngIndex + 1
-        lngIndexTotal = lngIndexTotal + 1
-        
-        rst.MoveNext
-    Loop
+    Call ExportRecordset(txt, rst, strInsert)
     
     If Not (txt Is Nothing) Then
         txt.Close
@@ -4038,55 +3851,7 @@ Private Sub ExportPortions(Version As FNDDSVersionNumber)
     Call txt.WriteLine(strInsert)
     Call txt.Write("VALUES ")
     
-    Do Until rst.EOF
-        strValues = vbNullString
-        For Each fld In rst.Fields
-            Select Case fld.name
-                Case "FoodCode", "ModCode", "Subcode", "SeqNum", "Version"
-                    strValues = strValues & fld.Value & ", "
-                Case "SubcodeDescr", "PortionDescr", "PortionChangeType"
-                    If IsNull(fld.Value) Then
-                        strValues = strValues & "NULL, "
-                    Else
-                        strValues = strValues & "'" & Utility.EscapedString(fld.Value) & "', "
-                    End If
-                Case "WeightChangeType"
-                    If IsNull(fld.Value) Then
-                        strValues = strValues & "NULL"
-                    Else
-                        strValues = strValues & "'" & Utility.EscapedString(fld.Value) & "'"
-                    End If
-                Case "PortionCode" '-- Integers
-                    If IsNull(fld.Value) Then
-                        strValues = strValues & "NULL, "
-                    Else
-                        strValues = strValues & fld.Value & ", "
-                    End If
-                Case "Weight" '-- Decimals
-                    If IsNull(fld.Value) Then
-                        strValues = strValues & "NULL, "
-                    Else
-                        strValues = strValues & fld.Value & ", "
-                    End If
-                Case Else
-                    Stop
-            End Select
-        Next fld
-        
-        If lngIndex > 999 Then
-            Call txt.WriteLine(strInsert)
-            Call txt.Write("VALUES ")
-            lngIndex = 0
-        End If
-        
-        If lngIndex > 0 Then
-            Call txt.Write("   ")
-        End If
-        Call txt.WriteLine("(" & strValues & ")")
-        lngIndex = lngIndex + 1
-        
-        rst.MoveNext
-    Loop
+    Call ExportRecordset(txt, rst, strInsert)
     
     txt.Close
     Set txt = Nothing
@@ -4203,43 +3968,7 @@ Private Sub ExportTagname(Version As FNDDSVersionNumber)
     Call txt.WriteLine(strInsert)
     Call txt.Write("VALUES ")
     
-    Do Until rst.EOF
-        strValues = vbNullString
-        For Each fld In rst.Fields
-            Select Case fld.name
-                Case "Tagname" '-- Keys
-                    strValues = strValues & "'" & Utility.EscapedString(fld.Value) & "', "
-                Case "TagnameDescription", "Units", "Tables", "Synonyms", "Keywords", "Examples", "Comments" '-- Strings
-                    If IsNull(fld.Value) Then
-                        strValues = strValues & "NULL, "
-                    Else
-                        strValues = strValues & "'" & Utility.EscapedString(fld.Value) & "', "
-                    End If
-                Case "Notes" '-- Strings
-                    If IsNull(fld.Value) Then
-                        strValues = strValues & "NULL"
-                    Else
-                        strValues = strValues & "'" & Utility.EscapedString(fld.Value) & "'"
-                    End If
-                Case Else
-                    Stop
-            End Select
-        Next fld
-        
-        If lngIndex > 999 Then
-            Call txt.WriteLine(strInsert)
-            Call txt.Write("VALUES ")
-            lngIndex = 0
-        End If
-        
-        If lngIndex > 0 Then
-            Call txt.Write("   ")
-        End If
-        Call txt.WriteLine("(" & strValues & ")")
-        lngIndex = lngIndex + 1
-        
-        rst.MoveNext
-    Loop
+    Call ExportRecordset(txt, rst, strInsert)
     
     txt.Close
     Set txt = Nothing
