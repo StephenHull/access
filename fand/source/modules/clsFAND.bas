@@ -3920,9 +3920,9 @@ Private Sub ExportRecordset(TextFile As Scripting.TextStream, Recordset As ADODB
             Else
                 Call TextFile.WriteLine("(" & strValues & "),")
             End If
+        
+            lngIndex = lngIndex + 1
         End If
-
-        lngIndex = lngIndex + 1
     Loop
 
 End Sub
