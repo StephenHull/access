@@ -297,7 +297,7 @@ End Function
 
 Public Function EscapedString(Text As String) As String
 
-    EscapedString = Replace(Replace(Trim$(Text), "'", "\'"), """", "\""")
+    EscapedString = Replace(Replace(Trim$(Text), "'", "''"), """", """""")
 
 End Function
 

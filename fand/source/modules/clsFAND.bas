@@ -3477,6 +3477,7 @@ Private Sub ExportFoodDescr(Version As FNDDSVersionNumber)
 
     Dim SQL As String
     Dim lngIndex As Long
+    Dim strComma As String
     Dim strFieldName As String
     Dim strFileName As String
     Dim strFolderName As String
@@ -3524,49 +3525,7 @@ Private Sub ExportFoodDescr(Version As FNDDSVersionNumber)
     Call txt.WriteLine(strInsert)
     Call txt.Write("VALUES ")
     
-    Do Until rst.EOF
-        strValues = vbNullString
-        For Each fld In rst.Fields
-            Select Case fld.name
-                Case "FoodCode", "ModCode", "Version" '-- Keys
-                    strValues = strValues & fld.Value & ", "
-                Case "MainDescription", "AbbrDescription", "IncludesDescription", "FatCode", "FatDescription" '-- Strings
-                    If IsNull(fld.Value) Then
-                        strValues = strValues & "NULL, "
-                    Else
-                        strValues = strValues & "'" & Utility.EscapedString(fld.Value) & "', "
-                    End If
-                Case "FortificationCode" '-- Integers
-                    If IsNull(fld.Value) Then
-                        strValues = strValues & "NULL, "
-                    Else
-                        strValues = strValues & fld.Value & ", "
-                    End If
-                Case "MoistureChange", "FatChange", "WeightInitial", "WeightChange", "WeightFinal" '-- Decimals
-                    If IsNull(fld.Value) Then
-                        strValues = strValues & "NULL, "
-                    Else
-                        strValues = strValues & fld.Value & ", "
-                    End If
-                Case Else
-                    Stop
-            End Select
-        Next fld
-        
-        If lngIndex > 999 Then
-            Call txt.WriteLine(strInsert)
-            Call txt.Write("VALUES ")
-            lngIndex = 0
-        End If
-        
-        If lngIndex > 0 Then
-            Call txt.Write("   ")
-        End If
-        Call txt.WriteLine("(" & strValues & ")")
-        lngIndex = lngIndex + 1
-        
-        rst.MoveNext
-    Loop
+    Call ExportRecordset(txt, rst, strInsert)
     
     txt.Close
     Set txt = Nothing
@@ -4134,6 +4093,72 @@ Private Sub ExportPortions(Version As FNDDSVersionNumber)
     
     rst.Close
     Set rst = Nothing
+
+End Sub
+
+Private Sub ExportRecordset(TextFile As Scripting.TextStream, Recordset As ADODB.Recordset, InsertSQL As String)
+
+    Dim lngIndex As Long
+    Dim strComma As String
+    Dim strValues As String
+    Dim fld As ADODB.Field
+
+    Do Until Recordset.EOF
+        strComma = vbNullString
+        strValues = vbNullString
+        
+        For Each fld In Recordset.Fields
+            If Len(strValues) > 0 Then
+                strComma = ", "
+            End If
+            
+            Select Case fld.Type
+                Case adInteger '3
+                    If IsNull(fld.Value) Then
+                        strValues = strValues & strComma & "NULL"
+                    Else
+                        strValues = strValues & strComma & fld.Value
+                    End If
+                Case adNumeric '131
+                    If IsNull(fld.Value) Then
+                        strValues = strValues & strComma & "NULL"
+                    Else
+                        strValues = strValues & strComma & fld.Value
+                    End If
+                Case adVarChar '200
+                    If IsNull(fld.Value) Then
+                        strValues = strValues & strComma & "NULL"
+                    Else
+                        strValues = strValues & strComma & "'" & Utility.EscapedString(fld.Value) & "'"
+                    End If
+                Case Else
+                    Debug.Print fld.Type
+                    Stop
+            End Select
+        Next fld
+        
+        Recordset.MoveNext
+    
+        '-- Add the tab
+        If lngIndex > 0 Then
+            Call TextFile.Write("   ")
+        End If
+
+        If lngIndex > 999 Then
+            Call TextFile.WriteLine("(" & strValues & ");")
+            Call TextFile.WriteLine(InsertSQL)
+            Call TextFile.Write("VALUES ")
+            lngIndex = 0
+        Else
+            If Recordset.EOF Then
+                Call TextFile.WriteLine("(" & strValues & ");")
+            Else
+                Call TextFile.WriteLine("(" & strValues & "),")
+            End If
+        End If
+
+        lngIndex = lngIndex + 1
+    Loop
 
 End Sub
 
