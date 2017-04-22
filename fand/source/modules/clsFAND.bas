@@ -2506,11 +2506,20 @@ Public Sub CreateAutoCompleteFiles()
             "FROM suggest INNER JOIN foodsuggest ON suggest.SuggestID = foodsuggest.SuggestID AND " & _
             "suggest.SuggestType = foodsuggest.SuggestType " & _
             "WHERE (suggest.SuggestType = 1) "
+            
+'        SQL = "SELECT suggest.SuggestDescription, foodsuggest.Version, SUM(foodsuggest.SuggestCount) AS Frequency, foodsuggest.FoodCode " & _
+            "FROM suggest INNER JOIN foodsuggest ON suggest.SuggestID = foodsuggest.SuggestID AND " & _
+            "suggest.SuggestType = dbo.foodsuggest.SuggestType " & _
+            "WHERE (dbo.suggest.SuggestType = 1) "
+            
         If l = 2 Then
             SQL = SQL & "OR (suggest.SuggestType = 2) "
         End If
         SQL = SQL & "GROUP BY suggest.SuggestDescription, foodsuggest.Version " & _
             "ORDER BY suggest.SuggestDescription, foodsuggest.Version"
+'        SQL = SQL & "GROUP BY suggest.SuggestDescription, foodsuggest.Version, foodsuggest.FoodCode " & _
+            "ORDER BY suggest.SuggestDescription, foodsuggest.Version, foodsuggest.FoodCode"
+
         Set rst = New ADODB.Recordset
         Call rst.Open(SQL, cnnBack, adOpenStatic, adLockReadOnly, adCmdText)
         
@@ -2524,7 +2533,9 @@ Public Sub CreateAutoCompleteFiles()
             strTerm = rst("SuggestDescription")
             lngVersion = rst("Version")
             lngFrequency = rst("Frequency")
-            
+
+            strTerm = DescriptionWithoutSpecialCharacters(strTerm)
+
             Call CreateAutoCompleteFileBody(strTerm, strTermPrevious, lngVersion, lngFrequency, blnFirstRow, txt)
             
             If blnFirstRow Then blnFirstRow = False
@@ -2547,12 +2558,18 @@ Public Sub CreateAutoCompleteFiles()
         Call fso.DeleteFile(strFullpath)
     End If
     
-    SQL = "SELECT suggest.SuggestDescription, ingredsuggest.Version, SUM(ingredsuggest.SuggestCount) AS Frequency " & _
+'    SQL = "SELECT suggest.SuggestDescription, ingredsuggest.Version, SUM(ingredsuggest.SuggestCount) AS Frequency " & _
         "FROM ingredsuggest INNER JOIN suggest ON " & _
         "ingredsuggest.SuggestID = suggest.SuggestID AND ingredsuggest.SuggestType = suggest.SuggestType " & _
         "WHERE (ingredsuggest.SuggestType = 3) OR (ingredsuggest.SuggestType = 4) " & _
         "GROUP BY suggest.SuggestDescription, ingredsuggest.Version " & _
         "ORDER BY suggest.SuggestDescription, ingredsuggest.Version"
+    SQL = "SELECT suggest.SuggestDescription, ingredsuggest.Version, SUM(ingredsuggest.SuggestCount) AS Frequency, ingredsuggest.SRCode " & _
+        "FROM ingredsuggest INNER JOIN suggest ON " & _
+        "ingredsuggest.SuggestID = suggest.SuggestID AND ingredsuggest.SuggestType = suggest.SuggestType " & _
+        "WHERE (ingredsuggest.SuggestType = 3) OR (ingredsuggest.SuggestType = 4) " & _
+        "GROUP BY suggest.SuggestDescription, ingredsuggest.Version, ingredsuggest.SRCode " & _
+        "ORDER BY suggest.SuggestDescription, ingredsuggest.Version, ingredsuggest.SRCode"
     Set rst = New ADODB.Recordset
     Call rst.Open(SQL, cnnBack, adOpenStatic, adLockReadOnly, adCmdText)
     
@@ -2566,6 +2583,8 @@ Public Sub CreateAutoCompleteFiles()
         strTerm = rst("SuggestDescription")
         lngVersion = rst("Version")
         lngFrequency = rst("Frequency")
+        
+        strTerm = DescriptionWithoutSpecialCharacters(strTerm)
         
         Call CreateAutoCompleteFileBody(strTerm, strTermPrevious, lngVersion, lngFrequency, blnFirstRow, txt)
         
@@ -3080,6 +3099,54 @@ Private Sub CreateTables()
     cnnBack.Execute SQL, lng, adCmdText
 
 End Sub
+
+Private Function DescriptionWithoutSpecialCharacters(Text As String) As String
+
+    Dim j As Long
+    Dim lngCharCode As Long
+    Dim lngTextLen As Long
+    Dim strChar As String
+    Dim strText As String
+    
+    lngTextLen = Len(Text)
+            
+    strText = vbNullString
+    For j = 1 To lngTextLen
+        strChar = Mid$(Text, j, 1)
+        lngCharCode = Asc(strChar)
+        Select Case lngCharCode
+            Case 10 'Line feed
+            Case 13 'Carriage return
+            Case 32 To 34 'Space!"
+            Case 36 To 41 '$%&'()
+            Case 43 To 47 '+,-./
+            Case 48 To 57 'Numbers
+            Case 61 '=
+            Case 65 To 90 'Uppercase letters
+            Case 92 '\
+            Case 97 To 122 'Lowercase letters
+            Case 146 '’
+                Debug.Print lngCharCode, strChar
+                strChar = "'"
+            Case 232 'è
+                Debug.Print lngCharCode, strChar
+                strChar = "e"
+            Case 233 'é
+                Debug.Print lngCharCode, strChar
+                strChar = "e"
+            Case Else
+                Debug.Print lngCharCode, strChar
+                Stop
+        End Select
+        
+        strText = strText & strChar
+    Next j
+    
+    'Debug.Print Text, strText
+    
+    DescriptionWithoutSpecialCharacters = strText
+
+End Function
 
 Private Function DocumentCount(Version As Long) As Long
 
@@ -3636,7 +3703,7 @@ Private Sub ExportIngredients(Version As FNDDSVersionNumber)
     Call txt.WriteLine("-- Ingredients Table (Version " & Version & ")")
     Call txt.WriteLine("-- ----------------------------------------------------------------------")
     
-    strInsert = "INSERT INTO FoodSearch (FoodCode, ModCode, SeqNum, Version, SRCode, SRDescr, SRDescrAlt, " & _
+    strInsert = "INSERT INTO Ingredients (FoodCode, ModCode, SeqNum, Version, SRCode, SRDescr, SRDescrAlt, " & _
         "ChangeTypeToSRCode, IngredType, Amount, Measure, PortionCode, PortionDescr, RetentionCode, " & _
         "RetentionDescr, ChangeTypeToRetnCode, Flag, Weight, ChangeTypeToWeight, Percentage)"
     Call txt.WriteLine(strInsert)
@@ -3691,7 +3758,7 @@ Private Sub ExportIngredSearch(Version As FNDDSVersionNumber)
     Call txt.WriteLine("-- Ingredients Search Table (Version " & Version & ")")
     Call txt.WriteLine("-- ----------------------------------------------------------------------")
     
-    strInsert = "INSERT INTO FoodSearch (FoodCode, ModCode, SeqNum, IngredType, IngrCode, IngrDescr, IngrDescrAlt, Version)"
+    strInsert = "INSERT INTO IngredSearch (FoodCode, ModCode, SeqNum, IngredType, IngrCode, IngrDescr, IngrDescrAlt, Version)"
     Call txt.WriteLine(strInsert)
     Call txt.Write("VALUES ")
     
