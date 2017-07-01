@@ -350,7 +350,7 @@ Private Sub AppendEquivalents()
         "A_DRINKS " & _
         "FROM Equivalent " & _
         "UNION "
-    SQL = "SELECT FOODCODE," & _
+    SQL = SQL & "SELECT FOODCODE," & _
         "MODCODE," & _
         "Version," & _
         "F_TOTAL," & _
@@ -3504,19 +3504,118 @@ End Function
 Public Sub ExportData(Version As FNDDSVersionNumber)
     
     '--Export record(s)
-    Call ExportFoodDescr(Version)
-    Call ExportFoodSearch(Version)
+'    Call ExportFoodDescr(Version)
+'    Call ExportFoodSearch(Version)
     ' Call AppendFoodSuggest
     ' Call AppendFoodWords
-    Call ExportPortions(Version)
-    Call ExportTagname(Version)
-    Call ExportNutrientDescr(Version)
-    Call ExportNutrients(Version)
-    ' Call AppendEquivalentDescr
-    ' Call AppendEquivalents
-    Call ExportIngredients(Version)
-    Call ExportIngredSearch(Version)
+'    Call ExportPortions(Version)
+'    Call ExportTagname(Version)
+'    Call ExportNutrientDescr(Version)
+'    Call ExportNutrients(Version)
+     Call ExportEquivalentDescr(Version)
+     Call ExportEquivalents(Version)
+'    Call ExportIngredients(Version)
+'    Call ExportIngredSearch(Version)
     'Call AppendIngredSuggest
+
+End Sub
+
+Private Sub ExportEquivalentDescr(Version As FNDDSVersionNumber)
+
+    Dim SQL As String
+    Dim lngIndex As Long
+    Dim strFileName As String
+    Dim strFolderName As String
+    Dim strInsert As String
+    Dim strValues As String
+    Dim fld As ADODB.Field
+    Dim rst As ADODB.Recordset
+    Dim txt As Scripting.TextStream
+    
+    SQL = "SELECT Tagname, Version, EquivalentDescription, Unit, Decimals, DisplayOrder " & _
+        "FROM equivalentdescr " & _
+        "WHERE (Version = " & Version & ")" & _
+        "ORDER BY Tagname"
+    Set rst = New ADODB.Recordset
+    Call rst.Open(SQL, cnnBack, adOpenKeyset, adLockOptimistic, adCmdText)
+    
+    strFolderName = fso.BuildPath(SQL_PATH, ExportFolderName(Version))
+    If fso.FolderExists(strFolderName) = False Then
+        Call fso.CreateFolder(strFolderName)
+    End If
+    strFileName = fso.BuildPath(strFolderName, "Inserts_07_EquivalentDescr_v" & Version & ".sql")
+    Set txt = fso.CreateTextFile(strFileName)
+    
+    Call txt.WriteLine("-- ----------------------------------------------------------------------")
+    Call txt.WriteLine("-- Equivalent Description Table (Version " & Version & ")")
+    Call txt.WriteLine("-- ----------------------------------------------------------------------")
+    
+    strInsert = "INSERT INTO EquivalentDescr (Tagname, Version, EquivalentDescription, Unit, Decimals, DisplayOrder)"
+    Call txt.WriteLine(strInsert)
+    Call txt.Write("VALUES ")
+    
+    Call ExportRecordset(txt, rst, strInsert)
+    
+    txt.Close
+    Set txt = Nothing
+    
+    rst.Close
+    Set rst = Nothing
+
+End Sub
+
+Private Sub ExportEquivalents(Version As FNDDSVersionNumber)
+
+    Dim SQL As String
+    Dim lngIndex As Long
+    Dim lngIndexTotal As Long
+    Dim strFileName As String
+    Dim strFolderName As String
+    Dim strHeaderLine As String
+    Dim strHeaderText As String
+    Dim strInsert As String
+    Dim strValues As String
+    Dim fld As ADODB.Field
+    Dim rst As ADODB.Recordset
+    Dim txt As Scripting.TextStream
+    
+    SQL = "SELECT FoodCode, ModCode, Tagname, Version, EquivalentValue " & _
+        "FROM equivalents " & _
+        "WHERE (Version = " & Version & ")" & _
+        "ORDER BY FoodCode," & _
+        "ModCode," & _
+        "Tagname"
+    Set rst = New ADODB.Recordset
+    Call rst.Open(SQL, cnnBack, adOpenKeyset, adLockOptimistic, adCmdText)
+    
+    strFolderName = fso.BuildPath(SQL_PATH, ExportFolderName(Version))
+    If fso.FolderExists(strFolderName) = False Then
+        Call fso.CreateFolder(strFolderName)
+    End If
+    strFileName = fso.BuildPath(strFolderName, "Inserts_08_Equivalents_v" & Version & ".sql")
+    Set txt = fso.CreateTextFile(strFileName)
+    
+    strHeaderLine = "-- ----------------------------------------------------------------------"
+    strHeaderText = "-- Equivalents Table (Version " & Version & ")"
+    
+    Call txt.WriteLine(strHeaderLine)
+    Call txt.WriteLine(strHeaderText)
+    Call txt.WriteLine(strHeaderLine)
+    
+    strInsert = "INSERT INTO Equivalents (FoodCode, ModCode, Tagname, Version, EquivalentValue)"
+    
+    Call txt.WriteLine(strInsert)
+    Call txt.Write("VALUES ")
+    
+    Call ExportRecordset(txt, rst, strInsert)
+    
+    If Not (txt Is Nothing) Then
+        txt.Close
+    End If
+    Set txt = Nothing
+    
+    rst.Close
+    Set rst = Nothing
 
 End Sub
 
