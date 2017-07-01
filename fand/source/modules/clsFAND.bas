@@ -23,7 +23,7 @@ Private Utility As clsUtility
 
 Private cnnBack As ADODB.Connection
 Private cnnFNDDS As ADODB.Connection
-Private cnnMPED As ADODB.Connection
+'Private cnnMPED As ADODB.Connection
 Private cnnSR As ADODB.Connection
 
 Private comAddtlDescr_Lkp As ADODB.Command
@@ -39,7 +39,7 @@ Private comFoodMatrixValue_Lkp As ADODB.Command
 'Private comIngredRecipe_Lkp As ADODB.Command
 ''Private comIngredSearch_Lkp As ADODB.Command
 'Private comModNutrient_Lkp As ADODB.Command
-Private comMPED_Lkp As ADODB.Command
+'Private comMPED_Lkp As ADODB.Command
 'Private comNutrient_Lkp As ADODB.Command
 Private comPortionDescr_Lkp As ADODB.Command
 Private comPortions_Lkp As ADODB.Command
@@ -72,7 +72,7 @@ Private rstFoodMatrixValue_Lkp As ADODB.Recordset
 'Private rstIngredRecipe_Lkp As ADODB.Recordset
 ''Private rstIngredSearch_Lkp As ADODB.Recordset
 'Private rstModNutrient_Lkp As ADODB.Recordset
-Private rstMPED_Lkp As ADODB.Recordset
+'Private rstMPED_Lkp As ADODB.Recordset
 'Private rstNutrient_Lkp As ADODB.Recordset
 Private rstPortionDescr_Lkp As ADODB.Recordset
 Private rstPortions_Lkp As ADODB.Recordset
@@ -121,15 +121,15 @@ Private Sub Class_Initialize()
     End With
     
     '--Reference MPED database
-    Set cnnMPED = New ADODB.Connection
-    With cnnMPED
-        .ConnectionString = "Provider=SQLOLEDB;" & _
-            "Data Source=SGH-03;" & _
-            "Initial Catalog=mped;" & _
-            "Integrated Security=SSPI"
-        .CursorLocation = adUseServer
-        .Open
-    End With
+'    Set cnnMPED = New ADODB.Connection
+'    With cnnMPED
+'        .ConnectionString = "Provider=SQLOLEDB;" & _
+'            "Data Source=SGH-03;" & _
+'            "Initial Catalog=mped;" & _
+'            "Integrated Security=SSPI"
+'        .CursorLocation = adUseServer
+'        .Open
+'    End With
     
     '--Reference SR database
     Set cnnSR = New ADODB.Connection
@@ -188,22 +188,27 @@ Private Sub AppendEquivalentDescr()
     '--Old table of equivalent values
     SQL = "SELECT COLUMN_NAME AS Tagname " & _
         "FROM INFORMATION_SCHEMA.Columns " & _
-        "WHERE (TABLE_NAME = 'tblEquivalent') " & _
+        "WHERE (TABLE_NAME = 'Equivalent') " & _
         "ORDER BY ORDINAL_POSITION"
     Set rst2 = New ADODB.Recordset
-    Call rst2.Open(SQL, cnnMPED, adOpenStatic, adLockReadOnly, adCmdText)
+    Call rst2.Open(SQL, cnnFNDDS, adOpenStatic, adLockReadOnly, adCmdText)
     
     '--Update equivalents
-    For l = 0 To 1
-    
-        If l = 0 Then
+    For l = 3 To 7
+        If l = 1 Then
             lngVersion = 1
-        ElseIf l = 1 Then
-            lngVersion = 2
         ElseIf l = 2 Then
-            lngVersion = 4
+            lngVersion = 2
         ElseIf l = 3 Then
+            lngVersion = 4
+        ElseIf l = 4 Then
             lngVersion = 8
+        ElseIf l = 5 Then
+            lngVersion = 16
+        ElseIf l = 6 Then
+            lngVersion = 32
+        ElseIf l = 7 Then
+            lngVersion = 64
         End If
         
         rst2.Requery
@@ -214,11 +219,11 @@ Private Sub AppendEquivalentDescr()
                 Case Else
                     strDescription = EquivalentDescription(strTagname)
                     strUnit = EquivalentUnits(strTagname)
-                    If strTagname = "EQUIVFLAG" Then
-                        lngDecimals = 0
-                    Else
-                        lngDecimals = 3
-                    End If
+'                    If strTagname = "EQUIVFLAG" Then
+'                        lngDecimals = 0
+'                    Else
+'                        lngDecimals = 3
+'                    End If
                     lngOrder = EquivalentSortOrder(strTagname)
                     With rst1
                         .AddNew
@@ -235,38 +240,38 @@ Private Sub AppendEquivalentDescr()
         Loop
         
         '-- Add whole fruit
-        strTagname = "WHOLEFRT"
-        strDescription = EquivalentDescription(strTagname)
-        strUnit = EquivalentUnits(strTagname)
-        lngDecimals = 3
-        lngOrder = EquivalentSortOrder(strTagname)
-        With rst1
-            .AddNew
-            .Fields("Version") = lngVersion
-            .Fields("EquivalentDescription") = strDescription
-            .Fields("Tagname") = strTagname
-            .Fields("Unit") = strUnit
-            .Fields("Decimals") = lngDecimals
-            .Fields("DisplayOrder") = lngOrder
-            .Update
-        End With
+'        strTagname = "WHOLEFRT"
+'        strDescription = EquivalentDescription(strTagname)
+'        strUnit = EquivalentUnits(strTagname)
+'        lngDecimals = 3
+'        lngOrder = EquivalentSortOrder(strTagname)
+'        With rst1
+'            .AddNew
+'            .Fields("Version") = lngVersion
+'            .Fields("EquivalentDescription") = strDescription
+'            .Fields("Tagname") = strTagname
+'            .Fields("Unit") = strUnit
+'            .Fields("Decimals") = lngDecimals
+'            .Fields("DisplayOrder") = lngOrder
+'            .Update
+'        End With
         
         '-- Add fruit juice
-        strTagname = "FRTJUICE"
-        strDescription = EquivalentDescription(strTagname)
-        strUnit = EquivalentUnits(strTagname)
-        lngDecimals = 3
-        lngOrder = EquivalentSortOrder(strTagname)
-        With rst1
-            .AddNew
-            .Fields("Version") = lngVersion
-            .Fields("EquivalentDescription") = strDescription
-            .Fields("Tagname") = strTagname
-            .Fields("Unit") = strUnit
-            .Fields("Decimals") = lngDecimals
-            .Fields("DisplayOrder") = lngOrder
-            .Update
-        End With
+'        strTagname = "FRTJUICE"
+'        strDescription = EquivalentDescription(strTagname)
+'        strUnit = EquivalentUnits(strTagname)
+'        lngDecimals = 3
+'        lngOrder = EquivalentSortOrder(strTagname)
+'        With rst1
+'            .AddNew
+'            .Fields("Version") = lngVersion
+'            .Fields("EquivalentDescription") = strDescription
+'            .Fields("Tagname") = strTagname
+'            .Fields("Unit") = strUnit
+'            .Fields("Decimals") = lngDecimals
+'            .Fields("DisplayOrder") = lngOrder
+'            .Update
+'        End With
 
     Next l
     
@@ -302,49 +307,95 @@ Private Sub AppendEquivalents()
     rst1.Open SQL, cnnBack, adOpenKeyset, adLockOptimistic, adCmdText
     
     '--Food code table
-    '-- Limit to versions 1=FNDDS 1.0 and 2=FNDDS 2.0
+    '-- Exclude versions 1=FNDDS 1.0 and 2=FNDDS 2.0
     SQL = "SELECT FOODCODE," & _
-        "MODCODE," & _
+        "0 AS MODCODE," & _
         "Version," & _
-        "EQUIVFLAG," & _
-        "G_TOTAL," & _
-        "G_WHL," & _
-        "G_NWHL," & _
-        "V_TOTAL," & _
-        "V_DRKGR," & _
-        "V_ORANGE," & _
-        "V_POTATO," & _
-        "V_STARCY," & _
-        "V_TOMATO," & _
-        "V_OTHER," & _
         "F_TOTAL," & _
         "F_CITMLB," & _
-        "F_OTHER,"
+        "F_OTHER," & _
+        "F_JUICE," & _
+        "V_TOTAL," & _
+        "V_DRKGR," & _
+        "V_REDOR_TOTAL," & _
+        "V_REDOR_TOMATO," & _
+        "V_REDOR_OTHER," & _
+        "V_STARCHY_TOTAL," & _
+        "V_STARCHY_POTATO," & _
+        "V_STARCHY_OTHER," & _
+        "V_OTHER," & _
+        "V_LEGUMES,"
+    SQL = SQL & "G_TOTAL," & _
+        "G_WHOLE," & _
+        "G_REFINED," & _
+        "PF_TOTAL," & _
+        "PF_MPS_TOTAL," & _
+        "PF_MEAT," & _
+        "PF_CUREDMEAT," & _
+        "PF_ORGAN," & _
+        "PF_POULT," & _
+        "PF_SEAFD_HI," & _
+        "PF_SEAFD_LOW," & _
+        "PF_EGGS," & _
+        "PF_SOY," & _
+        "PF_NUTSDS," & _
+        "PF_LEGUMES,"
     SQL = SQL & "D_TOTAL," & _
         "D_MILK," & _
         "D_YOGURT," & _
         "D_CHEESE," & _
-        "M_MPF," & _
-        "M_MEAT," & _
-        "M_ORGAN," & _
-        "M_FRANK," & _
-        "M_POULT," & _
-        "M_FISH_HI," & _
-        "M_FISH_LO," & _
-        "M_EGG," & _
-        "M_SOY," & _
-        "M_NUTSD," & _
-        "LEGUMES,"
-    SQL = SQL & "DISCFAT_OIL," & _
-        "DISCFAT_SOL," & _
-        "ADD_SUG," & _
-        "A_BEV " & _
-        "FROM tblEquivalent " & _
+        "OILS," & _
+        "SOLID_FATS," & _
+        "ADD_SUGARS," & _
+        "A_DRINKS " & _
+        "FROM Equivalent " & _
+        "UNION "
+    SQL = "SELECT FOODCODE," & _
+        "MODCODE," & _
+        "Version," & _
+        "F_TOTAL," & _
+        "F_CITMLB," & _
+        "F_OTHER," & _
+        "F_JUICE," & _
+        "V_TOTAL," & _
+        "V_DRKGR," & _
+        "V_REDOR_TOTAL," & _
+        "V_REDOR_TOMATO," & _
+        "V_REDOR_OTHER," & _
+        "V_STARCHY_TOTAL," & _
+        "V_STARCHY_POTATO," & _
+        "V_STARCHY_OTHER," & _
+        "V_OTHER," & _
+        "V_LEGUMES,"
+    SQL = SQL & "G_TOTAL," & _
+        "G_WHOLE," & _
+        "G_REFINED," & _
+        "PF_TOTAL," & _
+        "PF_MPS_TOTAL," & _
+        "PF_MEAT," & _
+        "PF_CUREDMEAT," & _
+        "PF_ORGAN," & _
+        "PF_POULT," & _
+        "PF_SEAFD_HI," & _
+        "PF_SEAFD_LOW," & _
+        "PF_EGGS," & _
+        "PF_SOY," & _
+        "PF_NUTSDS," & _
+        "PF_LEGUMES,"
+    SQL = SQL & "D_TOTAL," & _
+        "D_MILK," & _
+        "D_YOGURT," & _
+        "D_CHEESE," & _
+        "OILS," & _
+        "SOLID_FATS," & _
+        "ADD_SUGARS," & _
+        "A_DRINKS " & _
+        "FROM ModEquivalent " & _
         "ORDER BY FOODCODE," & _
         "MODCODE," & _
         "Version"
     Set rst2 = New ADODB.Recordset
-    Call rst2.Open(SQL, cnnMPED, adOpenStatic, adLockReadOnly, adCmdText)
+    Call rst2.Open(SQL, cnnFNDDS, adOpenStatic, adLockReadOnly, adCmdText)
     
     Do Until rst2.EOF
         lngFoodCode = rst2("FOODCODE")
@@ -356,8 +407,8 @@ Private Sub AppendEquivalents()
             Select Case strTagname
                 Case "FOODCODE", "MODCODE", "Version"
 '                    Debug.Print strTagname
-                Case "EQUIVFLAG"
-                    dblEquivalentValue = CLng(fld.Value)
+'                Case "EQUIVFLAG"
+'                    dblEquivalentValue = CLng(fld.Value)
                 Case Else
                     dblEquivalentValue = CDbl(fld.Value)
             End Select
@@ -2367,11 +2418,11 @@ Private Sub CloseCommands()
 '        Set rstModNutrient_Lkp = Nothing
 '    End If
 '    Set comModNutrient_Lkp = Nothing
-    If Not (rstMPED_Lkp Is Nothing) Then
-        If rstMPED_Lkp.State = adStateOpen Then rstMPED_Lkp.Close
-        Set rstMPED_Lkp = Nothing
-    End If
-    Set comMPED_Lkp = Nothing
+'    If Not (rstMPED_Lkp Is Nothing) Then
+'        If rstMPED_Lkp.State = adStateOpen Then rstMPED_Lkp.Close
+'        Set rstMPED_Lkp = Nothing
+'    End If
+'    Set comMPED_Lkp = Nothing
 '    If Not (rstNutrient_Lkp Is Nothing) Then
 '        If rstNutrient_Lkp.State = adStateOpen Then rstNutrient_Lkp.Close
 '        Set rstNutrient_Lkp = Nothing
@@ -2870,9 +2921,9 @@ Private Sub CreateTables()
     '--Create equivalents description table
     SQL = "CREATE TABLE equivalentdescr" & _
         "(" & _
-        "Tagname                VARCHAR(15)," & _
+        "Tagname                VARCHAR(25)," & _
         "Version                INT," & _
-        "EquivalentDescription  VARCHAR(65)," & _
+        "EquivalentDescription  VARCHAR(512)," & _
         "Unit                   VARCHAR(40)," & _
         "Decimals               INT," & _
         "DisplayOrder           INT," & _
@@ -2886,7 +2937,7 @@ Private Sub CreateTables()
         "(" & _
         "FoodCode           INT," & _
         "ModCode            INT," & _
-        "Tagname            VARCHAR(15)," & _
+        "Tagname            VARCHAR(25)," & _
         "Version            INT," & _
         "EquivalentValue    DECIMAL(10,3)," & _
         "Created            DATETIME DEFAULT CURRENT_TIMESTAMP," & _
@@ -3256,84 +3307,82 @@ End Function
 Private Function EquivalentDescription(Tagname As String) As String
 
     Select Case Tagname
-        Case "EQUIVFLAG"
-            EquivalentDescription = "Equivalent Flag"
-        Case "G_TOTAL"
-            EquivalentDescription = "Total grains"
-        Case "G_WHL", "G_WHOLE"
-            EquivalentDescription = "Whole grains"
-        Case "G_NWHL", "G_REFINED"
-            EquivalentDescription = "Non-whole/refined grains"
-        Case "V_TOTAL"
-            EquivalentDescription = "Total vegetables"
-        Case "V_DRKGR"
-            EquivalentDescription = "Dark-green vegetables"
-        Case "V_REDOR_TOTAL"
-            EquivalentDescription = "Red and orange vegetables"
-        Case "V_ORANGE", "V_REDOR_OTHER"
-            EquivalentDescription = "Orange vegetables"
-        Case "V_STARCHY_TOTAL"
-            EquivalentDescription = "Starchy vegetables"
-        Case "V_POTATO", "V_STARCHY_POTATO"
-            EquivalentDescription = "White potatoes"
-        Case "V_STARCY", "V_STARCHY_OTHER"
-            EquivalentDescription = "Other starchy vegetables"
-        Case "V_TOMATO", "V_REDOR_TOMATO"
-            EquivalentDescription = "Tomatoes"
-        Case "V_OTHER"
-            EquivalentDescription = "Other vegetables"
+'        Case "EQUIVFLAG"
+'            EquivalentDescription = "Equivalent Flag"
         Case "F_TOTAL"
-            EquivalentDescription = "Total fruits"
+            EquivalentDescription = "Total intact fruits (whole or cut) and fruit juices (cup eq.)"
         Case "F_CITMLB"
-            EquivalentDescription = "Citrus fruits, melons, and berries"
+            EquivalentDescription = "Intact fruits (whole or cut) of citrus, melons, and berries (cup eq.)"
         Case "F_OTHER"
-            EquivalentDescription = "Other fruits"
+            EquivalentDescription = "Intact fruits (whole or cut); excluding citrus, melons, and berries (cup eq.)"
         Case "F_JUICE"
-            EquivalentDescription = "Fruit juice"
-        Case "WHOLEFRT"
-            EquivalentDescription = "Whole fruit"
-        Case "FRTJUICE"
-            EquivalentDescription = "Fruit juice"
-        Case "D_TOTAL"
-            EquivalentDescription = "Total milk (milk, yogurt & cheese)"
-        Case "D_MILK"
-            EquivalentDescription = "Milk"
-        Case "D_YOGURT"
-            EquivalentDescription = "Yogurt"
-        Case "D_CHEESE"
-            EquivalentDescription = "Cheese"
+            EquivalentDescription = "Fruit juices, citrus and non citrus (cup eq.)"
+        Case "V_TOTAL"
+            EquivalentDescription = "Total dark green, red and orange, starchy, and other vegetables; excludes legumes (cup eq.)"
+        Case "V_DRKGR"
+            EquivalentDescription = "Dark green vegetables (cup eq.)"
+        Case "V_REDOR_TOTAL"
+            EquivalentDescription = "Total red and orange vegetables (tomatoes and tomato products + other red and orange vegetables) (cup eq.)"
+        Case "V_REDOR_TOMATO"
+            EquivalentDescription = "Tomatoes and tomato products (cup eq.)"
+        Case "V_REDOR_OTHER"
+            EquivalentDescription = "Other red and orange vegetables, excluding tomatoes and tomato products (cup eq.)"
+        Case "V_STARCHY_TOTAL"
+            EquivalentDescription = "Total starchy vegetables (white potatoes + other starchy vegetables) (cup eq.)"
+        Case "V_STARCHY_POTATO"
+            EquivalentDescription = "White potatoes (cup eq.)"
+        Case "V_STARCHY_OTHER"
+            EquivalentDescription = "Other starchy vegetables, excluding white potatoes (cup eq.)"
+        Case "V_OTHER"
+            EquivalentDescription = "Other vegetables not in the vegetable components listed above (cup eq.)"
+        Case "V_LEGUMES"
+            EquivalentDescription = "Beans and peas (legumes) computed as vegetables (cup eq.)"
+        Case "G_TOTAL"
+            EquivalentDescription = "Total whole and refined grains (oz. eq.)"
+        Case "G_WHOLE"
+            EquivalentDescription = "Grains defined as whole grains and contain the entire grain kernel ? the bran, germ, and endosperm (oz. eq.)"
+        Case "G_REFINED"
+            EquivalentDescription = "Refined grains that do not contain all of the components of the entire grain kernel (oz. eq.)"
         Case "PF_TOTAL"
-            EquivalentDescription = "Total meat"
-        Case "M_MPF", "PF_MPS_TOTAL"
-            EquivalentDescription = "Meat, poultry, fish"
-        Case "M_MEAT", "PF_MEAT"
-            EquivalentDescription = "Meat (beef, pork, veal, lamb, game)"
-        Case "M_ORGAN", "PF_ORGAN"
-            EquivalentDescription = "Organ meats (meat, poultry)"
-        Case "M_FRANK", "PF_CUREDMEAT"
-            EquivalentDescription = "Frankfurters, sausage, luncheon meats (made from meat or poultry)"
-        Case "M_POULT", "PF_POULT"
-            EquivalentDescription = "Poultry (chicken, turkey, other)"
-        Case "M_FISH_HI", "PF_SEAFD_HI"
-            EquivalentDescription = "Fish and shellfish high in n-3 fatty acids"
-        Case "M_FISH_LO", "PF_SEAFD_LOW"
-            EquivalentDescription = "Fish and shellfish low in n-3 fatty acids"
-        Case "M_EGG", "PF_EGGS"
-            EquivalentDescription = "Eggs"
-        Case "M_SOY", "PF_SOY"
-            EquivalentDescription = "Soybean products (tofu, meat analogs)"
-        Case "M_NUTSD", "PF_NUTSDS"
-            EquivalentDescription = "Nuts and seeds"
-        Case "LEGUMES", "V_LEGUMES"
-            EquivalentDescription = "Cooked dry beans and peas"
-        Case "DISCFAT_OIL"
-            EquivalentDescription = "Discretionary oil"
-        Case "DISCFAT_SOL"
-            EquivalentDescription = "Discretionary solid fat"
-        Case "ADD_SUG"
-            EquivalentDescription = "Added sugars"
-        Case "A_BEV"
-            EquivalentDescription = "Alcoholic beverages"
+            EquivalentDescription = "Total meat, poultry, organ meat, cured meat, seafood, eggs, soy, and nuts and seeds; excludes legumes (oz. eq.)"
+        Case "PF_MPS_TOTAL"
+            EquivalentDescription = "Total of meat, poultry, seafood, organ meat, and cured meat (oz. eq.)"
+        Case "PF_MEAT"
+            EquivalentDescription = "Beef, veal, pork, lamb, and game meat; excludes organ meat and cured meat (oz. eq.)"
+        Case "PF_CUREDMEAT"
+            EquivalentDescription = "Frankfurters, sausages, corned beef, and luncheon meat that are made from beef, pork, or poultry (oz. eq.)"
+        Case "PF_ORGAN"
+            EquivalentDescription = "Organ meat from beef, veal, pork, lamb, game, and poultry (oz. eq.)"
+        Case "PF_POULT"
+            EquivalentDescription = "Chicken, turkey, Cornish hens, duck, goose, quail, and pheasant (game birds); excludes organ meat and cured meat (oz. eq.)"
+        Case "PF_SEAFD_HI"
+            EquivalentDescription = "Seafood (finfish, shellfish, and other seafood) high in n-3 fatty acids (oz. eq.)"
+        Case "PF_SEAFD_LOW"
+            EquivalentDescription = "Seafood (finfish, shellfish, and other seafood) low in n-3 fatty acids (oz. eq.)"
+        Case "PF_EGGS"
+            EquivalentDescription = "Eggs (chicken, duck, goose, quail) and egg substitutes (oz. eq.)"
+        Case "PF_SOY"
+            EquivalentDescription = "Soy products, excluding calcium fortified soy milk and immature soybeans (oz. eq.)"
+        Case "PF_NUTSDS"
+            EquivalentDescription = "Peanuts, tree nuts, and seeds; excludes coconut (oz. eq.)"
+        Case "PF_LEGUMES"
+            EquivalentDescription = "Beans and Peas (legumes) computed as protein foods (oz. eq.)"
+        Case "D_TOTAL"
+            EquivalentDescription = "Total milk, yogurt, cheese, and whey. For some foods, the total dairy values could be higher than the sum of D_MILK, D_YOGURT, and D_CHEESE because Miscellaneous dairy component composed of whey which is not included in FPED as a separate variable. (cup eq.)"
+        Case "D_MILK"
+            EquivalentDescription = "Fluid milk, buttermilk, evaporated milk, dry milk, and calcium fortified soy milk (cup eq.)"
+        Case "D_YOGURT"
+            EquivalentDescription = "Yogurt (cup eq.)"
+        Case "D_CHEESE"
+            EquivalentDescription = "Cheeses (cup eq.)"
+        Case "OILS"
+            EquivalentDescription = "Fats naturally present in nuts, seeds, and seafood; unhydrogentated vegetable oils, except palm oil, palm kernel oil, and coconut oils; fat present in avocado and olives above the allowable amount; 50% of fat present in stick and tub margarines and margarine spreads (grams)"
+        Case "SOLID_FATS"
+            EquivalentDescription = "Fats naturally present in meat, poultry, eggs, and dairy (lard, tallow, and butter); hydrogenated or partially hydrogenated oils; shortening, palm, palm kernel and coconut oils; fat naturally present in coconut meat and cocoa butter; and 50% of fat present in stick and tub margarines and margarine spreads (grams)"
+        Case "ADD_SUGARS"
+            EquivalentDescription = "Foods defined as added sugars (tsp. eq.)"
+        Case "A_DRINKS"
+            EquivalentDescription = "Alcoholic beverages and alcohol (ethanol) added to foods after cooking (no. of drinks)"
         Case Else
             Stop
     End Select
@@ -3343,75 +3392,81 @@ End Function
 Private Function EquivalentSortOrder(Tagname As String) As Long
 
     Select Case Tagname
-        Case "EQUIVFLAG"
-            EquivalentSortOrder = 0
-        Case "G_TOTAL"
+'        Case "EQUIVFLAG"
+'            EquivalentSortOrder = 0
+        Case "F_TOTAL"
             EquivalentSortOrder = 100
-        Case "G_WHL"
+        Case "F_CITMLB"
             EquivalentSortOrder = 110
-        Case "G_NWHL"
+        Case "F_OTHER"
             EquivalentSortOrder = 120
+        Case "F_JUICE"
+            EquivalentSortOrder = 130
         Case "V_TOTAL"
             EquivalentSortOrder = 200
         Case "V_DRKGR"
             EquivalentSortOrder = 210
-        Case "V_ORANGE"
+        Case "V_REDOR_TOTAL"
             EquivalentSortOrder = 220
-        Case "V_POTATO"
+        Case "V_REDOR_TOMATO"
             EquivalentSortOrder = 230
-        Case "V_STARCY"
+        Case "V_REDOR_OTHER"
+            EquivalentSortOrder = 235
+        Case "V_STARCHY_TOTAL"
             EquivalentSortOrder = 240
-        Case "V_TOMATO"
+        Case "V_STARCHY_POTATO"
             EquivalentSortOrder = 250
+        Case "V_STARCHY_OTHER"
+            EquivalentSortOrder = 255
         Case "V_OTHER"
             EquivalentSortOrder = 260
-        Case "F_TOTAL"
+        Case "V_LEGUMES"
+            EquivalentSortOrder = 270
+        Case "G_TOTAL"
             EquivalentSortOrder = 300
-        Case "F_CITMLB"
+        Case "G_WHOLE"
             EquivalentSortOrder = 310
-        Case "F_OTHER"
+        Case "G_REFINED"
             EquivalentSortOrder = 320
-        Case "WHOLEFRT"
-            EquivalentSortOrder = 330
-        Case "FRTJUICE"
-            EquivalentSortOrder = 340
-        Case "D_TOTAL"
+        Case "PF_TOTAL"
             EquivalentSortOrder = 400
-        Case "D_MILK"
+        Case "PF_MPS_TOTAL"
             EquivalentSortOrder = 410
-        Case "D_YOGURT"
+        Case "PF_MEAT"
             EquivalentSortOrder = 420
-        Case "D_CHEESE"
+        Case "PF_CUREDMEAT"
+            EquivalentSortOrder = 425
+        Case "PF_ORGAN"
             EquivalentSortOrder = 430
-        Case "M_MPF"
+        Case "PF_POULT"
+            EquivalentSortOrder = 440
+        Case "PF_SEAFD_HI"
+            EquivalentSortOrder = 450
+        Case "PF_SEAFD_LOW"
+            EquivalentSortOrder = 455
+        Case "PF_EGGS"
+            EquivalentSortOrder = 460
+        Case "PF_SOY"
+            EquivalentSortOrder = 470
+        Case "PF_NUTSDS"
+            EquivalentSortOrder = 480
+        Case "PF_LEGUMES"
+            EquivalentSortOrder = 490
+        Case "D_TOTAL"
             EquivalentSortOrder = 500
-        Case "M_MEAT"
+        Case "D_MILK"
             EquivalentSortOrder = 510
-        Case "M_ORGAN"
+        Case "D_YOGURT"
             EquivalentSortOrder = 520
-        Case "M_FRANK"
+        Case "D_CHEESE"
             EquivalentSortOrder = 530
-        Case "M_POULT"
-            EquivalentSortOrder = 540
-        Case "M_FISH_HI"
-            EquivalentSortOrder = 550
-        Case "M_FISH_LO"
-            EquivalentSortOrder = 555
-        Case "M_EGG"
-            EquivalentSortOrder = 560
-        Case "M_SOY"
-            EquivalentSortOrder = 570
-        Case "M_NUTSD"
-            EquivalentSortOrder = 580
-        Case "LEGUMES"
-            EquivalentSortOrder = 590
-        Case "DISCFAT_OIL"
+        Case "OILS"
             EquivalentSortOrder = 600
-        Case "DISCFAT_SOL"
+        Case "SOLID_FATS"
             EquivalentSortOrder = 610
-        Case "ADD_SUG"
+        Case "ADD_SUGARS"
             EquivalentSortOrder = 700
-        Case "A_BEV"
+        Case "A_DRINKS"
             EquivalentSortOrder = 800
         Case Else
             Stop
@@ -3422,76 +3477,24 @@ End Function
 Private Function EquivalentUnits(Tagname As String) As String
 
     Select Case Tagname
-        Case "EQUIVFLAG"
-            EquivalentUnits = "N/A"
-        Case "G_TOTAL"
+'        Case "EQUIVFLAG"
+'            EquivalentUnits = "N/A"
+        Case "F_TOTAL", "F_CITMLB", "F_OTHER", "F_JUICE"
+            EquivalentUnits = "cup equivalents"
+        Case "V_TOTAL", "V_DRKGR", "V_REDOR_TOTAL", "V_REDOR_TOMATO", "V_REDOR_OTHER", "V_STARCHY_TOTAL", "V_STARCHY_POTATO", "V_STARCHY_OTHER", "V_OTHER", "V_LEGUMES"
+            EquivalentUnits = "cup equivalents"
+        Case "G_TOTAL", "G_WHOLE", "G_REFINED"
             EquivalentUnits = "ounce equivalents"
-        Case "G_WHL"
+        Case "PF_TOTAL", "PF_MPS_TOTAL", "PF_MEAT", "PF_CUREDMEAT", "PF_ORGAN", "PF_POULT", "PF_SEAFD_HI", "PF_SEAFD_LOW", "PF_EGGS", "PF_SOY", "PF_NUTSDS", "PF_LEGUMES"
             EquivalentUnits = "ounce equivalents"
-        Case "G_NWHL"
-            EquivalentUnits = "ounce equivalents"
-        Case "V_TOTAL"
+        Case "D_TOTAL", "D_MILK", "D_YOGURT", "D_CHEESE"
             EquivalentUnits = "cup equivalents"
-        Case "V_DRKGR"
-            EquivalentUnits = "cup equivalents"
-        Case "V_ORANGE"
-            EquivalentUnits = "cup equivalents"
-        Case "V_POTATO"
-            EquivalentUnits = "cup equivalents"
-        Case "V_STARCY"
-            EquivalentUnits = "cup equivalents"
-        Case "V_TOMATO"
-            EquivalentUnits = "cup equivalents"
-        Case "V_OTHER"
-            EquivalentUnits = "cup equivalents"
-        Case "F_TOTAL"
-            EquivalentUnits = "cup equivalents"
-        Case "F_CITMLB"
-            EquivalentUnits = "cup equivalents"
-        Case "F_OTHER"
-            EquivalentUnits = "cup equivalents"
-        Case "WHOLEFRT"
-            EquivalentUnits = "cup equivalents"
-        Case "FRTJUICE"
-            EquivalentUnits = "cup equivalents"
-        Case "D_TOTAL"
-            EquivalentUnits = "cup equivalents"
-        Case "D_MILK"
-            EquivalentUnits = "cup equivalents"
-        Case "D_YOGURT"
-            EquivalentUnits = "cup equivalents"
-        Case "D_CHEESE"
-            EquivalentUnits = "cup equivalents"
-        Case "M_MPF"
-            EquivalentUnits = "ounces of cooked lean meat"
-        Case "M_MEAT"
-            EquivalentUnits = "ounces of cooked lean meat"
-        Case "M_ORGAN"
-            EquivalentUnits = "ounces of cooked lean meat"
-        Case "M_FRANK"
-            EquivalentUnits = "ounces of cooked lean meat"
-        Case "M_POULT"
-            EquivalentUnits = "ounces of cooked lean meat"
-        Case "M_FISH_HI"
-            EquivalentUnits = "ounces of cooked lean meat"
-        Case "M_FISH_LO"
-            EquivalentUnits = "ounces of cooked lean meat"
-        Case "M_EGG"
-            EquivalentUnits = "ounce equivalents of cooked lean meat"
-        Case "M_SOY"
-            EquivalentUnits = "ounce equivalents of cooked lean meat"
-        Case "M_NUTSD"
-            EquivalentUnits = "ounce equivalents of cooked lean meat"
-        Case "LEGUMES"
-            EquivalentUnits = "cup equivalents"
-        Case "DISCFAT_OIL"
-            EquivalentUnits = "grams of oil"
-        Case "DISCFAT_SOL"
-            EquivalentUnits = "grams of solid fat"
-        Case "ADD_SUG"
+        Case "OILS", "SOLID_FATS"
+            EquivalentUnits = "grams"
+        Case "ADD_SUGARS"
             EquivalentUnits = "teaspoon equivalents"
-        Case "A_BEV"
-            EquivalentUnits = "total drinks"
+        Case "A_DRINKS"
+            EquivalentUnits = "number of drinks"
         Case Else
             Stop
     End Select
@@ -4409,19 +4412,19 @@ End Function
 Public Sub ImportData()
     
     '--Append record(s)
-    Call AppendFoodDescr
-    Call AppendFoodSearch
-    Call AppendFoodSuggest
+    'Call AppendFoodDescr
+    'Call AppendFoodSearch
+    'Call AppendFoodSuggest
     'Call AppendFoodWords
-    Call AppendPortions
-    Call AppendTagname
-    Call AppendNutrientDescr
-    Call AppendNutrients
-    'Call AppendEquivalentDescr
-    'Call AppendEquivalents
-    Call AppendIngredients
-    Call AppendIngredSearch
-    Call AppendIngredSuggest
+    'Call AppendPortions
+    'Call AppendTagname
+    'Call AppendNutrientDescr
+    'Call AppendNutrients
+    Call AppendEquivalentDescr
+    Call AppendEquivalents
+    'Call AppendIngredients
+    'Call AppendIngredSearch
+    'Call AppendIngredSuggest
 
 End Sub
 
@@ -4876,58 +4879,57 @@ Public Sub OpenCommands()
 '    Set rstModNutrient_Lkp = New ADODB.Recordset
 '    rstModNutrient_Lkp.Open comModNutrient_Lkp, , adOpenStatic, adLockReadOnly
     
-    Set comMPED_Lkp = New ADODB.Command
-    With comMPED_Lkp
-        .ActiveConnection = cnnMPED
-        SQL = "SELECT EQUIVFLAG," & _
-            "G_TOTAL," & _
-            "G_WHL," & _
-            "G_NWHL," & _
-            "V_TOTAL," & _
-            "V_DRKGR," & _
-            "V_ORANGE," & _
-            "V_POTATO," & _
-            "V_STARCY," & _
-            "V_TOMATO," & _
-            "V_OTHER," & _
-            "F_TOTAL," & _
-            "F_CITMLB," & _
-            "F_OTHER," & _
-            "D_TOTAL,"
-        SQL = SQL & "D_MILK," & _
-            "D_YOGURT," & _
-            "D_CHEESE," & _
-            "M_MPF," & _
-            "M_MEAT," & _
-            "M_ORGAN," & _
-            "M_FRANK," & _
-            "M_POULT," & _
-            "M_FISH_HI," & _
-            "M_FISH_LO," & _
-            "M_EGG," & _
-            "M_SOY," & _
-            "M_NUTSD," & _
-            "LEGUMES," & _
-            "DISCFAT_OIL," & _
-            "DISCFAT_SOL," & _
-            "ADD_SUG," & _
-            "A_BEV "
-        SQL = SQL & "FROM tblEquivalent " & _
-            "WHERE (FOODCODE = ?) AND " & _
-            "(MODCODE = ?) AND " & _
-            "(Version = ?)"
-        .CommandText = SQL
-        .CommandType = adCmdText
-        Set prm = .CreateParameter("@FoodCode", adBigInt, adParamInput, , 0)
-        .Parameters.Append prm
-        Set prm = .CreateParameter("@ModCode", adBigInt, adParamInput, , 0)
-        .Parameters.Append prm
-        Set prm = .CreateParameter("@Version", adBigInt, adParamInput, , 0)
-        .Parameters.Append prm
-        .Prepared = True
-    End With
-    Set rstMPED_Lkp = New ADODB.Recordset
-    rstMPED_Lkp.Open comMPED_Lkp, , adOpenStatic, adLockReadOnly
+'    Set comMPED_Lkp = New ADODB.Command
+'    With comMPED_Lkp
+'        .ActiveConnection = cnnFNDDS
+'        SQL = "SELECT G_TOTAL," & _
+'            "G_WHL," & _
+'            "G_NWHL," & _
+'            "V_TOTAL," & _
+'            "V_DRKGR," & _
+'            "V_ORANGE," & _
+'            "V_POTATO," & _
+'            "V_STARCY," & _
+'            "V_TOMATO," & _
+'            "V_OTHER," & _
+'            "F_TOTAL," & _
+'            "F_CITMLB," & _
+'            "F_OTHER," & _
+'            "D_TOTAL,"
+'        SQL = SQL & "D_MILK," & _
+'            "D_YOGURT," & _
+'            "D_CHEESE," & _
+'            "M_MPF," & _
+'            "M_MEAT," & _
+'            "M_ORGAN," & _
+'            "M_FRANK," & _
+'            "M_POULT," & _
+'            "M_FISH_HI," & _
+'            "M_FISH_LO," & _
+'            "M_EGG," & _
+'            "M_SOY," & _
+'            "M_NUTSD," & _
+'            "LEGUMES," & _
+'            "DISCFAT_OIL," & _
+'            "DISCFAT_SOL," & _
+'            "ADD_SUG," & _
+'            "A_BEV "
+'        SQL = SQL & "FROM Equivalent " & _
+'            "WHERE (FOODCODE = ?) AND " & _
+'            "(MODCODE = ?) AND " & _
+'            "(Version = ?)"
+'        .CommandText = SQL
+'        .CommandType = adCmdText
+'        Set prm = .CreateParameter("@FoodCode", adBigInt, adParamInput, , 0)
+'        .Parameters.Append prm
+'        Set prm = .CreateParameter("@ModCode", adBigInt, adParamInput, , 0)
+'        .Parameters.Append prm
+'        Set prm = .CreateParameter("@Version", adBigInt, adParamInput, , 0)
+'        .Parameters.Append prm
+'        .Prepared = True
+'    End With
+'    Set rstMPED_Lkp = New ADODB.Recordset
+'    rstMPED_Lkp.Open comMPED_Lkp, , adOpenStatic, adLockReadOnly
     
 '    Set comNutrient_Lkp = New ADODB.Command
 '    With comNutrient_Lkp
@@ -5929,7 +5931,7 @@ Private Function WordsInDocument(FoodCode As Long, ModCode As Long, Version As L
 
 End Function
 
-Public Sub WriteTooltipMessages()
+Public Sub WriteNutrientTooltipMessages()
 
     Dim SQL As String
     Dim strDescription As String
@@ -5945,8 +5947,8 @@ Public Sub WriteTooltipMessages()
     Dim rst As ADODB.Recordset
     
     Set fso = New Scripting.FileSystemObject
-    Set txt1 = fso.CreateTextFile("E:\projects\fand\databases\rawdata\INFOODS\tagnames\current.txt", True)
-    Set txt2 = fso.CreateTextFile("E:\projects\fand\databases\rawdata\INFOODS\tagnames\tooltips.xhtml", True)
+    Set txt1 = fso.CreateTextFile("E:\projects\fand\databases\rawdata\INFOODS\tagnames\currentNutrients.txt", True)
+    Set txt2 = fso.CreateTextFile("E:\projects\fand\databases\rawdata\INFOODS\tagnames\tooltipsNutrients.xhtml", True)
     
     SQL = "SELECT DISTINCT tagname.Tagname, nutrientdescr.NutrientDescription, tagname.TagnameDescription, tagname.Units, tagname.Tables, tagname.Synonyms " & _
         "FROM nutrientdescr INNER JOIN tagname ON nutrientdescr.Tagname = tagname.Tagname " & _
@@ -6022,10 +6024,10 @@ Private Sub Class_Terminate()
         cnnFNDDS.Close
         Set cnnFNDDS = Nothing
     End If
-    If Not (cnnMPED Is Nothing) Then
-        cnnMPED.Close
-        Set cnnMPED = Nothing
-    End If
+'    If Not (cnnMPED Is Nothing) Then
+'        cnnMPED.Close
+'        Set cnnMPED = Nothing
+'    End If
     If Not (cnnSR Is Nothing) Then
         cnnSR.Close
         Set cnnSR = Nothing
