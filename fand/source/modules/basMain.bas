@@ -17,6 +17,7 @@ Public Sub FoodAndNutrientData()
 '        Call .ExportData(fvnFNDDS5)
 '        Call .ExportData(fvnFNDDS6)
 '        Call .ExportData(fvnFNDDS7)
+'        Call .WriteEquivalentTooltipMessages
 '        Call .WriteNutrientTooltipMessages
 '        Call .UpdateData
 '        Call .CreateAutoCompleteFiles

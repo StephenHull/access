@@ -3307,8 +3307,6 @@ End Function
 Private Function EquivalentDescription(Tagname As String) As String
 
     Select Case Tagname
-'        Case "EQUIVFLAG"
-'            EquivalentDescription = "Equivalent Flag"
         Case "F_TOTAL"
             EquivalentDescription = "Total intact fruits (whole or cut) and fruit juices (cup eq.)"
         Case "F_CITMLB"
@@ -3389,11 +3387,92 @@ Private Function EquivalentDescription(Tagname As String) As String
     
 End Function
 
+Private Function EquivalentName(Tagname As String) As String
+
+    Select Case Tagname
+        Case "F_TOTAL"
+            EquivalentName = "Total fruits"
+        Case "F_CITMLB"
+            EquivalentName = "Citrus, melons, and berries"
+        Case "F_OTHER"
+            EquivalentName = "Other fruits"
+        Case "F_JUICE"
+            EquivalentName = "Fruit juices"
+        Case "V_TOTAL"
+            EquivalentName = "Total vegetables"
+        Case "V_DRKGR"
+            EquivalentName = "Dark green vegetables"
+        Case "V_REDOR_TOTAL"
+            EquivalentName = "Total red and orange vegetables"
+        Case "V_REDOR_TOMATO"
+            EquivalentName = "Tomatoes and tomato products"
+        Case "V_REDOR_OTHER"
+            EquivalentName = "Other red and orange vegetables"
+        Case "V_STARCHY_TOTAL"
+            EquivalentName = "Total starchy vegetables"
+        Case "V_STARCHY_POTATO"
+            EquivalentName = "White potatoes"
+        Case "V_STARCHY_OTHER"
+            EquivalentName = "Other starchy vegetables"
+        Case "V_OTHER"
+            EquivalentName = "Other vegetables"
+        Case "V_LEGUMES"
+            EquivalentName = "Beans and peas (as vegetables)"
+        Case "G_TOTAL"
+            EquivalentName = "Total grains"
+        Case "G_WHOLE"
+            EquivalentName = "Whole grains"
+        Case "G_REFINED"
+            EquivalentName = "Refined grains"
+        Case "PF_TOTAL"
+            EquivalentName = "Total protein foods"
+        Case "PF_MPS_TOTAL"
+            EquivalentName = "Total meat"
+        Case "PF_MEAT"
+            EquivalentName = "Meat"
+        Case "PF_CUREDMEAT"
+            EquivalentName = "Cured meat"
+        Case "PF_ORGAN"
+            EquivalentName = "Organ meat"
+        Case "PF_POULT"
+            EquivalentName = "Poultry"
+        Case "PF_SEAFD_HI"
+            EquivalentName = "Seafood high in n-3 fatty acids"
+        Case "PF_SEAFD_LOW"
+            EquivalentName = "Seafood low in n-3 fatty acids"
+        Case "PF_EGGS"
+            EquivalentName = "Eggs and egg substitutes"
+        Case "PF_SOY"
+            EquivalentName = "Soy products"
+        Case "PF_NUTSDS"
+            EquivalentName = "Nuts and seeds"
+        Case "PF_LEGUMES"
+            EquivalentName = "Beans and peas (as protein foods)"
+        Case "D_TOTAL"
+            EquivalentName = "Total dairy"
+        Case "D_MILK"
+            EquivalentName = "Milk"
+        Case "D_YOGURT"
+            EquivalentName = "Yogurt"
+        Case "D_CHEESE"
+            EquivalentName = "Cheeses"
+        Case "OILS"
+            EquivalentName = "Oils"
+        Case "SOLID_FATS"
+            EquivalentName = "Solid fats"
+        Case "ADD_SUGARS"
+            EquivalentName = "Added sugars"
+        Case "A_DRINKS"
+            EquivalentName = "Alcoholic beverages"
+        Case Else
+            Stop
+    End Select
+    
+End Function
+
 Private Function EquivalentSortOrder(Tagname As String) As Long
 
     Select Case Tagname
-'        Case "EQUIVFLAG"
-'            EquivalentSortOrder = 0
         Case "F_TOTAL"
             EquivalentSortOrder = 100
         Case "F_CITMLB"
@@ -6030,6 +6109,60 @@ Private Function WordsInDocument(FoodCode As Long, ModCode As Long, Version As L
 
 End Function
 
+Public Sub WriteEquivalentTooltipMessages()
+
+    Dim SQL As String
+    Dim strDescription As String
+    Dim strName As String
+    Dim strTagname As String
+    Dim strTitle As String
+    Dim strUnit As String
+    Dim fso As Scripting.FileSystemObject
+    Dim txt1 As Scripting.TextStream
+    Dim txt2 As Scripting.TextStream
+    Dim rst As ADODB.Recordset
+    
+    Set fso = New Scripting.FileSystemObject
+    Set txt1 = fso.CreateTextFile("E:\projects\fand\databases\rawdata\INFOODS\tagnames\currentEquivalents.txt", True)
+    Set txt2 = fso.CreateTextFile("E:\projects\fand\databases\rawdata\INFOODS\tagnames\tooltipsEquivalents.xhtml", True)
+    
+    SQL = "SELECT Tagname, EquivalentDescription, Unit FROM EquivalentDescr WHERE (Version = 64) ORDER BY DisplayOrder"
+    Set rst = New ADODB.Recordset
+    Call rst.Open(SQL, cnnBack, adOpenStatic, adLockReadOnly, adCmdText)
+    
+    With rst
+        Do Until .EOF
+            strTagname = Trim$(.Fields("Tagname"))
+            strDescription = Trim$(.Fields("EquivalentDescription"))
+            strUnit = Trim$(.Fields("Unit"))
+            strName = EquivalentName(strTagname)
+            strTitle = strName & " (" & strUnit & ")"
+            Call txt1.WriteLine("equivalent." & strTagname & ".column.name=" & strName)
+            Call txt1.WriteLine("equivalent." & strTagname & ".column.title=" & strTitle)
+            Call txt1.WriteLine("equivalent." & strTagname & ".tooltip.body.tagname=" & strTagname)
+            Call txt1.WriteLine("equivalent." & strTagname & ".tooltip.body.description=" & strDescription)
+            Call txt1.WriteLine("equivalent." & strTagname & ".tooltip.body.units=" & strUnit)
+            Call txt2.WriteLine("<ui:include src=""tooltip.xhtml"">")
+            Call txt2.Write(vbTab)
+            Call txt2.WriteLine("<ui:param name=""tagname"" value=""" & strTagname & """ />")
+            Call txt2.Write(vbTab)
+            Call txt2.WriteLine("<ui:param name=""styleName"" value="""" />")
+            Call txt2.WriteLine("</ui:include>")
+            .MoveNext
+        Loop
+    End With
+    
+    txt2.Close
+    Set txt2 = Nothing
+    txt1.Close
+    Set txt1 = Nothing
+    Set fso = Nothing
+    
+    rst.Close
+    Set rst = Nothing
+
+End Sub
+
 Public Sub WriteNutrientTooltipMessages()
 
     Dim SQL As String
@@ -6051,7 +6184,7 @@ Public Sub WriteNutrientTooltipMessages()
     
     SQL = "SELECT DISTINCT tagname.Tagname, nutrientdescr.NutrientDescription, tagname.TagnameDescription, tagname.Units, tagname.Tables, tagname.Synonyms " & _
         "FROM nutrientdescr INNER JOIN tagname ON nutrientdescr.Tagname = tagname.Tagname " & _
-        "WHERE (nutrientdescr.Version = 8) " & _
+        "WHERE (nutrientdescr.Version = 64) " & _
         "ORDER BY tagname.Tagname"
     Set rst = New ADODB.Recordset
     Call rst.Open(SQL, cnnBack, adOpenStatic, adLockReadOnly, adCmdText)
