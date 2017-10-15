@@ -158,6 +158,297 @@ Private Sub Class_Initialize()
 
 End Sub
 
+Private Sub AppendCommodities()
+
+    Dim dblCommodityValue As Double
+    Dim lngFoodCode As Long
+    Dim lngModCode As Long
+    Dim lngVersion As Long
+    Dim SQL As String
+    Dim strTagname As String
+    Dim fld As ADODB.Field
+    Dim rst1 As ADODB.Recordset
+    Dim rst2 As ADODB.Recordset
+    
+    '--New table
+    SQL = "SELECT FoodCode," & _
+        "ModCode," & _
+        "Tagname," & _
+        "Version," & _
+        "CommodityValue " & _
+        "FROM commodities " & _
+        "WHERE (FoodCode = 0)"
+    Set rst1 = New ADODB.Recordset
+    rst1.Open SQL, cnnBack, adOpenKeyset, adLockOptimistic, adCmdText
+    
+    '--Food code table
+    '-- Exclude versions 1=FNDDS 1.0 and 2=FNDDS 2.0
+    SQL = "SELECT FoodCode," & _
+        "0 AS ModCode," & _
+        "Version," & _
+        "TotalDairy," & _
+        "TotalFluidMilk," & _
+        "FluidMilkWhl," & _
+        "FluidMilk2Pct," & _
+        "FluidMilk1Pct," & _
+        "FluidMilkSkim," & _
+        "Butter," & _
+        "Cheese," & _
+        "Yogurt," & _
+        "OtherDairy," & _
+        "TotalFatAndOils," & _
+        "Margarine," & _
+        "SaladCookingOils,"
+    SQL = SQL & "Shortening," & _
+        "OtherOils," & _
+        "TotalFruit," & _
+        "TotalApples," & _
+        "Apples," & _
+        "ApplesFromJuice," & _
+        "Bananas," & _
+        "Berries," & _
+        "Grapes," & _
+        "Melons," & _
+        "TotalOranges," & _
+        "Oranges," & _
+        "OrangesFromJuice," & _
+        "OtherCitrusFruits," & _
+        "StoneFruits,"
+    SQL = SQL & "TropicalFruits," & _
+        "TotalGrain," & _
+        "CornFlour," & _
+        "OatFlour," & _
+        "RiceDried," & _
+        "WheatFlour," & _
+        "TotalMeatPoultryFish," & _
+        "TotalMeat," & _
+        "Beef," & _
+        "Pork," & _
+        "TotalPoultry," & _
+        "Chicken," & _
+        "Turkey," & _
+        "FinAndShellfish," & _
+        "EggsWithShell,"
+    SQL = SQL & "EggsNoShell," & _
+        "TotalNuts," & _
+        "Peanuts," & _
+        "TreeNuts," & _
+        "TotalCaloricSweeteners," & _
+        "TotalVegetables," & _
+        "TotalBrassica," & _
+        "BroccoliAndCauliflower," & _
+        "Carrots," & _
+        "Celery," & _
+        "Cucumbers," & _
+        "GreenPeas," & _
+        "TotalLeafyVeg," & _
+        "Lettuce," & _
+        "Onions,"
+    SQL = SQL & "Peppers," & _
+        "Tomatoes," & _
+        "SweetCorn," & _
+        "TotalRootsAndTubers," & _
+        "Potatoes," & _
+        "SnapBeans," & _
+        "LegumesDried," & _
+        "Created" & _
+        "FROM Commodity " & _
+        "UNION "
+    SQL = "SELECT FoodCode," & _
+        "ModCode," & _
+        "Version," & _
+        "TotalDairy," & _
+        "TotalFluidMilk," & _
+        "FluidMilkWhl," & _
+        "FluidMilk2Pct," & _
+        "FluidMilk1Pct," & _
+        "FluidMilkSkim," & _
+        "Butter," & _
+        "Cheese," & _
+        "Yogurt," & _
+        "OtherDairy," & _
+        "TotalFatAndOils," & _
+        "Margarine," & _
+        "SaladCookingOils,"
+    SQL = SQL & "Shortening," & _
+        "OtherOils," & _
+        "TotalFruit," & _
+        "TotalApples," & _
+        "Apples," & _
+        "ApplesFromJuice," & _
+        "Bananas," & _
+        "Berries," & _
+        "Grapes," & _
+        "Melons," & _
+        "TotalOranges," & _
+        "Oranges," & _
+        "OrangesFromJuice," & _
+        "OtherCitrusFruits," & _
+        "StoneFruits,"
+    SQL = SQL & "TropicalFruits," & _
+        "TotalGrain," & _
+        "CornFlour," & _
+        "OatFlour," & _
+        "RiceDried," & _
+        "WheatFlour," & _
+        "TotalMeatPoultryFish," & _
+        "TotalMeat," & _
+        "Beef," & _
+        "Pork," & _
+        "TotalPoultry," & _
+        "Chicken," & _
+        "Turkey," & _
+        "FinAndShellfish," & _
+        "EggsWithShell,"
+    SQL = SQL & "EggsNoShell," & _
+        "TotalNuts," & _
+        "Peanuts," & _
+        "TreeNuts," & _
+        "TotalCaloricSweeteners," & _
+        "TotalVegetables," & _
+        "TotalBrassica," & _
+        "BroccoliAndCauliflower," & _
+        "Carrots," & _
+        "Celery," & _
+        "Cucumbers," & _
+        "GreenPeas," & _
+        "TotalLeafyVeg," & _
+        "Lettuce," & _
+        "Onions,"
+    SQL = SQL & "Peppers," & _
+        "Tomatoes," & _
+        "SweetCorn," & _
+        "TotalRootsAndTubers," & _
+        "Potatoes," & _
+        "SnapBeans," & _
+        "LegumesDried," & _
+        "Created" & _
+        "FROM ModCommodity " & _
+        "ORDER BY FoodCode," & _
+        "ModCode," & _
+        "Version"
+    Set rst2 = New ADODB.Recordset
+    Call rst2.Open(SQL, cnnFNDDS, adOpenStatic, adLockReadOnly, adCmdText)
+    
+    Do Until rst2.EOF
+        lngFoodCode = rst2("FoodCode")
+        lngModCode = rst2("ModCode")
+        lngVersion = rst2("Version")
+        For Each fld In rst2.Fields
+            strTagname = Trim$(fld.name)
+            'dblEquivalentValue = -1
+            Select Case strTagname
+                Case "FoodCode", "ModCode", "Version"
+'                    Debug.Print strTagname
+'                Case "EQUIVFLAG"
+'                    dblEquivalentValue = CLng(fld.Value)
+                Case Else
+                    dblCommodityValue = CDbl(fld.Value)
+            End Select
+            If dblCommodityValue > -1 Then
+                With rst1
+                    .AddNew
+                    .Fields("FoodCode") = lngFoodCode
+                    .Fields("ModCode") = lngModCode
+                    .Fields("Tagname") = strTagname
+                    .Fields("Version") = lngVersion
+                    .Fields("CommodityValue") = dblCommodityValue
+                    .Update
+                End With
+            End If
+        Next fld
+        rst2.MoveNext
+    Loop
+    
+    rst2.Close
+    Set rst2 = Nothing
+    rst1.Close
+    Set rst1 = Nothing
+
+End Sub
+
+Private Sub AppendCommodityDescr()
+
+    Dim l As Long
+    Dim lngOrder As Long
+    Dim lngVersion As Long
+    Dim SQL As String
+    Dim strDescription As String
+    Dim strTagname As String
+    Dim strUnit As String
+    Dim rst1 As ADODB.Recordset
+    Dim rst2 As ADODB.Recordset
+    
+    '--New table
+    SQL = "SELECT Tagname," & _
+        "Version," & _
+        "CommodityDescription," & _
+        "Unit," & _
+        "Decimals," & _
+        "DisplayOrder " & _
+        "FROM equivalentdescr " & _
+        "WHERE (Tagname IS NULL)"
+    Set rst1 = New ADODB.Recordset
+    Call rst1.Open(SQL, cnnBack, adOpenKeyset, adLockOptimistic, adCmdText)
+    
+    '--Old table of commodity values
+    SQL = "SELECT COLUMN_NAME AS Tagname " & _
+        "FROM INFORMATION_SCHEMA.Columns " & _
+        "WHERE (TABLE_NAME = 'Commodities') " & _
+        "ORDER BY ORDINAL_POSITION"
+    Set rst2 = New ADODB.Recordset
+    Call rst2.Open(SQL, cnnFNDDS, adOpenStatic, adLockReadOnly, adCmdText)
+    
+    '--Update commodities
+    For l = 1 To 4
+        If l = 1 Then
+            lngVersion = 1
+        ElseIf l = 2 Then
+            lngVersion = 2
+        ElseIf l = 3 Then
+            lngVersion = 4
+        ElseIf l = 4 Then
+            lngVersion = 8
+        ElseIf l = 5 Then
+            lngVersion = 16
+        ElseIf l = 6 Then
+            lngVersion = 32
+        ElseIf l = 7 Then
+            lngVersion = 64
+        End If
+        
+        rst2.Requery
+        Do Until rst2.EOF
+            strTagname = rst2("Tagname")
+            Select Case strTagname
+                Case "FOODCODE", "MODCODE", "Version", "Created"
+                Case Else
+                    strDescription = CommodityDescription(strTagname)
+                    strUnit = CommodityUnits(strTagname)
+                    lngOrder = CommoditySortOrder(strTagname)
+                    With rst1
+                        .AddNew
+                        .Fields("Version") = lngVersion
+                        .Fields("CommodityDescription") = strDescription
+                        .Fields("Tagname") = strTagname
+                        .Fields("Unit") = strUnit
+                        .Fields("Decimals") = 3
+                        .Fields("DisplayOrder") = lngOrder
+                        .Update
+                    End With
+            End Select
+            rst2.MoveNext
+        Loop
+    Next l
+    
+    rst2.Close
+    Set rst2 = Nothing
+    
+    rst1.Close
+    Set rst1 = Nothing
+
+End Sub
+
 Private Sub AppendEquivalentDescr()
 
     Dim l As Long
@@ -232,7 +523,7 @@ Private Sub AppendEquivalentDescr()
                         .Fields("Tagname") = strTagname
                         .Fields("Unit") = strUnit
                         .Fields("Decimals") = lngDecimals
-                        .Fields("DisplayOrder") = lngOrder
+                        .Fields("DisplayOrder") = 3
                         .Update
                     End With
             End Select
@@ -2516,6 +2807,304 @@ Private Sub CloseCommands()
 
 End Sub
 
+Private Function CommodityDescription(Tagname As String) As String
+
+    Select Case Tagname
+        Case "TotalDairy"
+            CommodityDescription = "Total dairy products"
+        Case "TotalFluidMilk"
+            CommodityDescription = "Total fluid milk"
+        Case "FluidMilkWhl"
+            CommodityDescription = "Fluid whole milk"
+        Case "FluidMilk2pct"
+            CommodityDescription = "Fluid 0.02 milk"
+        Case "FluidMilk1pct"
+            CommodityDescription = "Fluid 0.01 milk"
+        Case "FluidMilkSkim"
+            CommodityDescription = "Fluid skim milk"
+        Case "Butter"
+            CommodityDescription = "Butter"
+        Case "Cheese"
+            CommodityDescription = "Cheese"
+        Case "Yogurt"
+            CommodityDescription = "Yogurt"
+        Case "OtherDairy"
+            CommodityDescription = "Other dairy products"
+        Case "TotalFatAndOils"
+            CommodityDescription = "Total fats and oils"
+        Case "Margarine"
+            CommodityDescription = "Margarine"
+        Case "SaladCookingOils"
+            CommodityDescription = "Salad and cooking oils"
+        Case "Shortening"
+            CommodityDescription = "Shortening"
+        Case "OtherOils"
+            CommodityDescription = "Other oils"
+        Case "TotalFruit"
+            CommodityDescription = "Total fruit"
+        Case "TotalApples"
+            CommodityDescription = "Total apples"
+        Case "Apples"
+            CommodityDescription = "Apples from fruit"
+        Case "ApplesFromJuice"
+            CommodityDescription = "Apples from juice"
+        Case "Bananas"
+            CommodityDescription = "Bananas"
+        Case "Berries"
+            CommodityDescription = "Berries"
+        Case "Grapes"
+            CommodityDescription = "Grapes"
+        Case "Melons"
+            CommodityDescription = "Melons"
+        Case "TotalOranges"
+            CommodityDescription = "Total oranges"
+        Case "Oranges"
+            CommodityDescription = "Oranges from fruit"
+        Case "OrangesFromJuice"
+            CommodityDescription = "Oranges from juice"
+        Case "OtherCitrusFruits"
+            CommodityDescription = "Other citrus fruits"
+        Case "StoneFruits"
+            CommodityDescription = "Stone fruits"
+        Case "TropicalFruits"
+            CommodityDescription = "Tropical fruits"
+        Case "TotalGrain"
+            CommodityDescription = "Total grains"
+        Case "CornFlour"
+            CommodityDescription = "Corn flour and meal"
+        Case "OatFlour"
+            CommodityDescription = "Oats and oat flour"
+        Case "RiceDried"
+            CommodityDescription = "Rice (dry or uncooked)"
+        Case "WheatFlour"
+            CommodityDescription = "Wheat flour"
+        Case "TotalMeatPoultryFish"
+            CommodityDescription = "Total meat, poultry, and fish"
+        Case "TotalMeat"
+            CommodityDescription = "Total meat"
+        Case "Beef"
+            CommodityDescription = "Beef"
+        Case "Pork"
+            CommodityDescription = "Pork"
+        Case "TotalPoultry"
+            CommodityDescription = "Total poultry"
+        Case "Chicken"
+            CommodityDescription = "Chicken"
+        Case "Turkey"
+            CommodityDescription = "Turkey"
+        Case "FinAndShellfish"
+            CommodityDescription = "Finfish and shellfish"
+        Case "EggsWithShell"
+            CommodityDescription = "Eggs, shell included"
+        Case "EggsNoShell"
+            CommodityDescription = "Eggs, without shell"
+        Case "TotalNuts"
+            CommodityDescription = "Total nuts"
+        Case "Peanuts"
+            CommodityDescription = "Peanuts"
+        Case "TreeNuts"
+            CommodityDescription = "Tree nuts"
+        Case "TotalCaloricSweeteners"
+            CommodityDescription = "Total caloric sweeteners"
+        Case "TotalVegetables"
+            CommodityDescription = "Total vegetables"
+        Case "TotalBrassica"
+            CommodityDescription = "Total brassica (cruciferous) vegetables"
+        Case "BroccoliAndCauliflower"
+            CommodityDescription = "Broccoli and cauliflower"
+        Case "Carrots"
+            CommodityDescription = "Carrots"
+        Case "Celery"
+            CommodityDescription = "Celery"
+        Case "Cucumbers"
+            CommodityDescription = "Cucumbers"
+        Case "GreenPeas"
+            CommodityDescription = "Green peas"
+        Case "TotalLeafyVeg"
+            CommodityDescription = "Total leafy vegetables"
+        Case "Lettuce"
+            CommodityDescription = "Lettuce (head and leaf)"
+        Case "Onions"
+            CommodityDescription = "Onions"
+        Case "Peppers"
+            CommodityDescription = "Peppers (bell and non-bell)"
+        Case "Tomatoes"
+            CommodityDescription = "Tomatoes"
+        Case "SweetCorn"
+            CommodityDescription = "Sweet corn"
+        Case "TotalRootsAndTubers"
+            CommodityDescription = "Total roots and tubers"
+        Case "Potatoes"
+            CommodityDescription = "Potatoes"
+        Case "SnapBeans"
+            CommodityDescription = "Snap beans/string beans"
+        Case "LegumesDried"
+            CommodityDescription = "Legumes (dry beans and peas - uncooked)"
+        Case Else
+            Stop
+    End Select
+    
+End Function
+
+Private Function CommoditySortOrder(Tagname As String) As Long
+
+    Select Case Tagname
+        Case "TotalDairy"
+            CommoditySortOrder = 100
+        Case "TotalFluidMilk"
+            CommoditySortOrder = 110
+        Case "FluidMilkWhl"
+            CommoditySortOrder = 112
+        Case "FluidMilk2pct"
+            CommoditySortOrder = 114
+        Case "FluidMilk1pct"
+            CommoditySortOrder = 116
+        Case "FluidMilkSkim"
+            CommoditySortOrder = 118
+        Case "Butter"
+            CommoditySortOrder = 120
+        Case "Cheese"
+            CommoditySortOrder = 130
+        Case "Yogurt"
+            CommoditySortOrder = 140
+        Case "OtherDairy"
+            CommoditySortOrder = 150
+        Case "TotalFatAndOils"
+            CommoditySortOrder = 200
+        Case "Margarine"
+            CommoditySortOrder = 210
+        Case "SaladCookingOils"
+            CommoditySortOrder = 220
+        Case "Shortening"
+            CommoditySortOrder = 230
+        Case "OtherOils"
+            CommoditySortOrder = 240
+        Case "TotalFruit"
+            CommoditySortOrder = 300
+        Case "TotalApples"
+            CommoditySortOrder = 310
+        Case "Apples"
+            CommoditySortOrder = 312
+        Case "ApplesFromJuice"
+            CommoditySortOrder = 314
+        Case "Bananas"
+            CommoditySortOrder = 320
+        Case "Berries"
+            CommoditySortOrder = 330
+        Case "Grapes"
+            CommoditySortOrder = 340
+        Case "Melons"
+            CommoditySortOrder = 350
+        Case "TotalOranges"
+            CommoditySortOrder = 360
+        Case "Oranges"
+            CommoditySortOrder = 362
+        Case "OrangesFromJuice"
+            CommoditySortOrder = 364
+        Case "OtherCitrusFruits"
+            CommoditySortOrder = 370
+        Case "StoneFruits"
+            CommoditySortOrder = 380
+        Case "TropicalFruits"
+            CommoditySortOrder = 390
+        Case "TotalGrain"
+            CommoditySortOrder = 400
+        Case "CornFlour"
+            CommoditySortOrder = 410
+        Case "OatFlour"
+            CommoditySortOrder = 420
+        Case "RiceDried"
+            CommoditySortOrder = 430
+        Case "WheatFlour"
+            CommoditySortOrder = 440
+        Case "TotalMeatPoultryFish"
+            CommoditySortOrder = 500
+        Case "TotalMeat"
+            CommoditySortOrder = 510
+        Case "Beef"
+            CommoditySortOrder = 512
+        Case "Pork"
+            CommoditySortOrder = 514
+        Case "TotalPoultry"
+            CommoditySortOrder = 520
+        Case "Chicken"
+            CommoditySortOrder = 522
+        Case "Turkey"
+            CommoditySortOrder = 524
+        Case "FinAndShellfish"
+            CommoditySortOrder = 530
+        Case "EggsWithShell"
+            CommoditySortOrder = 600
+        Case "EggsNoShell"
+            CommoditySortOrder = 650
+        Case "TotalNuts"
+            CommoditySortOrder = 700
+        Case "Peanuts"
+            CommoditySortOrder = 710
+        Case "TreeNuts"
+            CommoditySortOrder = 720
+        Case "TotalCaloricSweeteners"
+            CommoditySortOrder = 800
+        Case "TotalVegetables"
+            CommoditySortOrder = 900
+        Case "TotalBrassica"
+            CommoditySortOrder = 910
+        Case "BroccoliAndCauliflower"
+            CommoditySortOrder = 912
+        Case "Carrots"
+            CommoditySortOrder = 920
+        Case "Celery"
+            CommoditySortOrder = 925
+        Case "Cucumbers"
+            CommoditySortOrder = 930
+        Case "GreenPeas"
+            CommoditySortOrder = 935
+        Case "TotalLeafyVeg"
+            CommoditySortOrder = 940
+        Case "Lettuce"
+            CommoditySortOrder = 942
+        Case "Onions"
+            CommoditySortOrder = 950
+        Case "Peppers"
+            CommoditySortOrder = 955
+        Case "Tomatoes"
+            CommoditySortOrder = 960
+        Case "SweetCorn"
+            CommoditySortOrder = 965
+        Case "TotalRootsAndTubers"
+            CommoditySortOrder = 970
+        Case "Potatoes"
+            CommoditySortOrder = 972
+        Case "SnapBeans"
+            CommoditySortOrder = 980
+        Case "LegumesDried"
+            CommoditySortOrder = 985
+        Case Else
+            Stop
+    End Select
+    
+End Function
+
+Private Function CommodityUnits(Tagname As String) As String
+
+    Select Case Tagname
+        Case "TotalDairy", "TotalFluidMilk", "FluidMilkWhl", "FluidMilk2pct", "FluidMilk1pct", "FluidMilkSkim", _
+             "Butter", "Cheese", "Yogurt", "OtherDairy", "TotalFatAndOils", "Margarine", "SaladCookingOils", _
+             "Shortening", "OtherOils", "TotalFruit", "TotalApples", "Apples", "ApplesFromJuice", "Bananas", _
+             "Berries", "Grapes", "Melons", "TotalOranges", "Oranges", "OrangesFromJuice", "OtherCitrusFruits", _
+             "StoneFruits", "TropicalFruits", "TotalGrain", "CornFlour", "OatFlour", "RiceDried", "WheatFlour", _
+             "TotalMeatPoultryFish", "TotalMeat", "Beef", "Pork", "TotalPoultry", "Chicken", "Turkey", _
+             "FinAndShellfish", "EggsWithShell", "EggsNoShell", "TotalNuts", "Peanuts", "TreeNuts", _
+             "TotalCaloricSweeteners", "TotalVegetables", "TotalBrassica", "BroccoliAndCauliflower", "Carrots", _
+             "Celery", "Cucumbers", "GreenPeas", "TotalLeafyVeg", "Lettuce", "Onions", "Peppers", "Tomatoes", _
+             "SweetCorn", "TotalRootsAndTubers", "Potatoes", "SnapBeans", "LegumesDried"
+             CommodityUnits = "grams per 100 grams of FNDDS food"
+        Case Else
+            Stop
+    End Select
+    
+End Function
+
 Private Function CountInDocuments(WordID As Long, Version As Long, WordType As Long) As Long
 
     With comCountInDocuments_Lkp
@@ -2957,6 +3546,45 @@ Private Sub CreateTables()
         "REFERENCES fooddescr (FoodCode, ModCode, Version)"
     cnnBack.Execute SQL, lng, adCmdText
     
+    '--Create commodity description table
+    SQL = "CREATE TABLE commoditydescr" & _
+        "(" & _
+        "Tagname                VARCHAR(25)," & _
+        "Version                INT," & _
+        "CommodityDescription   VARCHAR(50)," & _
+        "Unit                   VARCHAR(40)," & _
+        "Decimals               INT," & _
+        "DisplayOrder           INT," & _
+        "Created                DATETIME DEFAULT CURRENT_TIMESTAMP," & _
+        "CONSTRAINT pk_equivalentdescr PRIMARY KEY (Tagname, Version)" & _
+        ")"
+    cnnBack.Execute SQL, lng, adCmdText
+
+    '--Create commodities table
+    SQL = "CREATE TABLE commodities" & _
+        "(" & _
+        "FoodCode           INT," & _
+        "ModCode            INT," & _
+        "Tagname            VARCHAR(25)," & _
+        "Version            INT," & _
+        "CommodityValue     DECIMAL(10,3)," & _
+        "Created            DATETIME DEFAULT CURRENT_TIMESTAMP," & _
+        "CONSTRAINT pk_equivalents PRIMARY KEY (FoodCode, ModCode, Tagname, Version)" & _
+        ")"
+    cnnBack.Execute SQL, lng, adCmdText
+    
+    '--Add constraint(s) to commodities
+    SQL = "ALTER TABLE commodities " & _
+        "ADD CONSTRAINT FK_commodities_commoditydescr " & _
+        "FOREIGN KEY (Tagname, Version) " & _
+        "REFERENCES commoditydescr (Tagname, Version)"
+    cnnBack.Execute SQL, lng, adCmdText
+    SQL = "ALTER TABLE commodities " & _
+        "ADD CONSTRAINT FK_commodities_fooddescr " & _
+        "FOREIGN KEY (FoodCode, ModCode, Version) " & _
+        "REFERENCES fooddescr (FoodCode, ModCode, Version)"
+    cnnBack.Execute SQL, lng, adCmdText
+    
     '--Create ingredients table
     SQL = "CREATE TABLE ingredients" & _
         "(" & _
@@ -3220,6 +3848,8 @@ On Error GoTo Err_Handler
     Dim lng As Long
 
     With cnnBack
+        .Execute "ALTER TABLE commodities DROP CONSTRAINT FK_commodities_commoditydescr", lng, adCmdText
+        .Execute "ALTER TABLE commodities DROP CONSTRAINT FK_commodities_fooddescr", lng, adCmdText
         .Execute "ALTER TABLE equivalents DROP CONSTRAINT FK_equivalents_equivalentdescr", lng, adCmdText
         .Execute "ALTER TABLE equivalents DROP CONSTRAINT FK_equivalents_fooddescr", lng, adCmdText
         .Execute "ALTER TABLE foodsearch DROP CONSTRAINT FK_foodsearch_fooddescr", lng, adCmdText
@@ -3237,7 +3867,7 @@ On Error GoTo Err_Handler
         .Execute "ALTER TABLE similarity DROP CONSTRAINT FK_similarity_fooddescr", lng, adCmdText
         .Execute "ALTER TABLE worddocument DROP CONSTRAINT FK_worddocument_word", lng, adCmdText
     End With
-    
+
 Exit_Sub:
     Exit Sub
 Err_Handler:
@@ -3258,6 +3888,8 @@ On Error GoTo Err_Handler
     Dim lng As Long
 
     With cnnBack
+        .Execute "DROP TABLE commodities", lng, adCmdText
+        .Execute "DROP TABLE commoditydescr", lng, adCmdText
         .Execute "DROP TABLE equivalentdescr", lng, adCmdText
         .Execute "DROP TABLE equivalents", lng, adCmdText
         .Execute "DROP TABLE fooddescr", lng, adCmdText
@@ -4598,8 +5230,10 @@ Public Sub ImportData()
     'Call AppendTagname
     'Call AppendNutrientDescr
     'Call AppendNutrients
-    Call AppendEquivalentDescr
-    Call AppendEquivalents
+    'Call AppendEquivalentDescr
+    'Call AppendEquivalents
+    Call AppendCommodityDescr
+    Call AppendCommodities
     'Call AppendIngredients
     'Call AppendIngredSearch
     'Call AppendIngredSuggest
